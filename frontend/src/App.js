@@ -284,13 +284,7 @@ const MapPanel = () => {
 
       {/* 3D Canvas */}
       <div className="map-canvas" data-testid="map-canvas">
-        <RouteMap3D
-          route={route}
-          dronePosition={dronePosition}
-          mode={mode}
-          followDrone={followDrone}
-          onKeyframeSelect={handleKeyframeSelect}
-        />
+        <SimpleMap3D />
       </div>
     </div>
   );
