@@ -128,6 +128,122 @@ async def get_firmware_file(filepath: str):
     return {"path": filepath, "content": content}
 
 
+# Route/Flight data endpoints for 3D visualization
+class RoutePoint(BaseModel):
+    x: float
+    y: float
+    z: float
+    yaw: float = 0.0
+    timestamp: float = 0.0
+    is_keyframe: bool = False
+
+class FlightRoute(BaseModel):
+    id: str
+    name: str
+    points: List[RoutePoint]
+    keyframes: List[RoutePoint]
+    total_distance: float
+    created_at: str
+
+class DronePosition(BaseModel):
+    x: float
+    y: float
+    z: float
+    yaw: float
+    pitch: float = 0.0
+    roll: float = 0.0
+    speed: float = 0.0
+    mode: str = "IDLE"
+
+# In-memory storage for demo (in real system - from Pi via WebSocket)
+_demo_routes = {}
+_current_position = DronePosition(x=0, y=0, z=5, yaw=0, mode="IDLE")
+
+@api_router.get("/routes")
+async def list_routes():
+    """List all saved routes"""
+    routes = await db.routes.find({}, {"_id": 0}).to_list(100)
+    return routes
+
+@api_router.get("/routes/{route_id}")
+async def get_route(route_id: str):
+    """Get route by ID"""
+    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+    if route:
+        return route
+    return {"error": "Route not found"}
+
+@api_router.post("/routes")
+async def create_route(route: FlightRoute):
+    """Save a new route"""
+    doc = route.model_dump()
+    await db.routes.insert_one(doc)
+    return {"success": True, "id": route.id}
+
+@api_router.get("/routes/demo/generate")
+async def generate_demo_route():
+    """Generate a demo route for testing 3D visualization"""
+    import math
+    import random
+    
+    # Generate spiral path
+    points = []
+    keyframes = []
+    total_distance = 0.0
+    
+    num_points = 100
+    for i in range(num_points):
+        t = i / num_points * 4 * math.pi  # 2 full spirals
+        radius = 20 + t * 2  # expanding spiral
+        
+        x = radius * math.cos(t)
+        y = radius * math.sin(t)
+        z = 5 + i * 0.2 + random.uniform(-0.5, 0.5)  # gradual climb with noise
+        yaw = math.atan2(math.cos(t + 0.1) - math.cos(t), math.sin(t + 0.1) - math.sin(t))
+        
+        point = RoutePoint(
+            x=x, y=y, z=z, yaw=yaw,
+            timestamp=i * 0.5,
+            is_keyframe=(i % 10 == 0)
+        )
+        points.append(point)
+        
+        if point.is_keyframe:
+            keyframes.append(point)
+        
+        if i > 0:
+            prev = points[i-1]
+            total_distance += math.sqrt((x-prev.x)**2 + (y-prev.y)**2 + (z-prev.z)**2)
+    
+    route = FlightRoute(
+        id="demo_route_001",
+        name="Demo Spiral Route",
+        points=[p.model_dump() for p in points],
+        keyframes=[k.model_dump() for k in keyframes],
+        total_distance=total_distance,
+        created_at=datetime.now(timezone.utc).isoformat()
+    )
+    
+    return route
+
+@api_router.get("/position")
+async def get_drone_position():
+    """Get current drone position (simulated)"""
+    return _current_position
+
+@api_router.post("/position")
+async def update_drone_position(pos: DronePosition):
+    """Update drone position (from Pi or simulator)"""
+    global _current_position
+    _current_position = pos
+    return {"success": True}
+
+@api_router.get("/simulation/start/{route_id}")
+async def start_simulation(route_id: str):
+    """Start route simulation for demo"""
+    return {"message": "Simulation would start here", "route_id": route_id}
+
+
 # Status endpoints (original)
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
