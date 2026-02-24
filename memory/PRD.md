@@ -86,7 +86,17 @@
 - [ ] Мобільний інтерфейс
 - [ ] SITL тестування
 
-## Тестування
-- Backend API: 100% (всі endpoints працюють)
-- Frontend: Працює локально (preview environment тимчасово недоступний)
-- 3D Map: Three.js + OrbitControls + анімація дрона
+## Тестування (24.02.2026)
+- ✅ Backend API: **100% (13/13 тестів)**
+- ✅ Frontend E2E: **100% (11/11 тестів)**
+- ✅ 3D Map: Three.js (vanilla) - працює (виправлено R3F/drei сумісність)
+- ✅ Preview Environment: **ПРАЦЮЄ**
+
+### Тестові файли
+- `/app/backend/tests/test_api.py` - pytest тести API
+- `/app/tests/e2e/core-flows.spec.ts` - Playwright тести UI
+- `/app/tests/e2e/map-simulation.spec.ts` - Playwright тести 3D карти
+
+## Примітки
+- API `/api/routes/demo/generate` повертає **MOCK** дані (статичний демо-маршрут)
+- 3D компонент переписано на чистий Three.js для уникнення проблем з @react-three/drei
