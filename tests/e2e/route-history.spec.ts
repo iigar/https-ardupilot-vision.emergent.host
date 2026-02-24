@@ -155,22 +155,21 @@ test.describe('Visual Homing - Route History & Save', () => {
     await expect(routeHistory).toBeVisible({ timeout: 10000 });
     
     // Find the route card containing our route name
-    const routeCard = page.locator(`text=${testRoute.name}`).first();
+    const routeCard = page.locator(`h3:has-text("${testRoute.name}")`).first();
     await expect(routeCard).toBeVisible();
     
-    // Hover to reveal delete button (it has opacity-0 by default, opacity-100 on hover)
+    // The delete button is in the same card wrapper with red/trash icon
+    // It's the second button in the action buttons group (first is view/map icon)
     const cardContainer = routeCard.locator('..').locator('..');
-    await cardContainer.hover();
     
-    // Click delete button (Trash2 icon)
-    const deleteBtn = cardContainer.locator('button[title="Видалити"]');
-    
-    // Set up delete response listener
+    // Set up delete response listener before clicking
     const deletePromise = page.waitForResponse(
       resp => resp.url().includes(`/api/routes/${testRoute.id}`) && resp.request().method() === 'DELETE',
       { timeout: 10000 }
     );
     
+    // Click the delete button - it's a button with text-red-400 class (trash icon)
+    const deleteBtn = cardContainer.locator('button.text-red-400, button:has(.text-red-400)').first();
     await deleteBtn.click({ force: true });
     
     // Wait for delete to complete
