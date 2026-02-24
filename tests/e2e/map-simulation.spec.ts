@@ -13,9 +13,6 @@ test.describe('Visual Homing - 3D Map & Simulation', () => {
     const mapPanel = page.getByTestId('map-panel');
     await expect(mapPanel).toBeVisible();
     
-    const simpleMap = page.getByTestId('simple-map-3d');
-    await expect(simpleMap).toBeVisible();
-    
     // Check canvas container
     const canvasContainer = page.getByTestId('threejs-canvas');
     await expect(canvasContainer).toBeVisible();
@@ -104,18 +101,41 @@ test.describe('Visual Homing - 3D Map & Simulation', () => {
     expect(data.keyframes).toBeDefined();
   });
 
-  test('Map stats display keyframes and distance', async ({ page }) => {
+  test('Map stats display keyframes and distance in top bar', async ({ page }) => {
     await waitFor3DCanvas(page);
     
-    // Wait for route data to load and stats to appear
-    const statsDiv = page.locator('.map-stats');
-    await expect(statsDiv).toBeVisible({ timeout: 10000 });
+    // Wait for route data to load - stats are now in the top glassmorphism panel
+    const mapPanel = page.getByTestId('map-panel');
+    await expect(mapPanel).toBeVisible();
     
-    // Check keyframes count is displayed
-    await expect(statsDiv).toContainText('Keyframes:');
+    // Check keyframes count is displayed in the top control bar
+    await expect(mapPanel.locator('text=Keyframes')).toBeVisible({ timeout: 10000 });
     
     // Check distance is displayed
-    await expect(statsDiv).toContainText('Дистанція:');
-    await expect(statsDiv).toContainText('m');
+    await expect(mapPanel.locator('text=Дистанція')).toBeVisible();
+  });
+
+  test('Auto-save toggle is visible and functional', async ({ page }) => {
+    await waitFor3DCanvas(page);
+    
+    const mapPanel = page.getByTestId('map-panel');
+    
+    // Check that the auto-save toggle label is visible
+    await expect(mapPanel.locator('text=Автозбереження')).toBeVisible();
+    
+    // Find the Switch component (shadcn Switch uses button with data-state)
+    const switchToggle = mapPanel.locator('button[role="switch"]');
+    await expect(switchToggle).toBeVisible();
+    
+    // Initially should be unchecked (no save button visible)
+    const saveBtn = page.getByTestId('save-route-btn');
+    await expect(saveBtn).not.toBeVisible();
+    
+    // Click to enable auto-save
+    await switchToggle.click({ force: true });
+    
+    // Now save button should be visible
+    await expect(saveBtn).toBeVisible({ timeout: 5000 });
+    await expect(saveBtn).toContainText('Зберегти');
   });
 });
