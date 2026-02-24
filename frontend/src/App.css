@@ -834,3 +834,60 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+
+/* Simple Map 3D Component */
+.map-panel-full {
+  height: calc(100vh - 170px);
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.simple-map-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.map-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.map-toolbar .map-btn {
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+.threejs-container {
+  flex: 1;
+  width: 100%;
+  background: #0a0a1a;
+  cursor: grab;
+}
+
+.threejs-container:active {
+  cursor: grabbing;
+}
+
+.map-stats {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.map-stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
