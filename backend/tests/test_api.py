@@ -2,7 +2,8 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+# Get backend URL from environment or use public preview URL
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ardupilot-vision.preview.emergentagent.com').rstrip('/')
 
 
 class TestRootAPI:
