@@ -110,8 +110,10 @@ const Drone = ({ position, rotation, mode }) => {
 
 // Flight path line
 const FlightPath = ({ points, color = '#4ecdc4', lineWidth = 2 }) => {
+  // Early return to avoid conditional hooks
+  if (!points || points.length < 2) return null;
+  
   const linePoints = useMemo(() => {
-    if (!points || points.length < 2) return [];
     return points.map(p => new THREE.Vector3(p.x, p.z, -p.y));
   }, [points]);
   
