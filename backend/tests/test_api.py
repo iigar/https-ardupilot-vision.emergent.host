@@ -126,6 +126,58 @@ class TestRoutes:
         data = response.json()
         assert isinstance(data, list)
 
+    def test_create_and_delete_route(self, api_client):
+        """Test POST /api/routes creates route and DELETE removes it"""
+        test_route = {
+            "id": f"test_route_{int(__import__('time').time() * 1000)}",
+            "name": "TEST_Pytest_Route",
+            "points": [{"x": 0, "y": 0, "z": 5, "yaw": 0, "timestamp": 0, "is_keyframe": True}],
+            "keyframes": [{"x": 0, "y": 0, "z": 5, "yaw": 0, "timestamp": 0, "is_keyframe": True}],
+            "total_distance": 100.0,
+            "created_at": "2026-02-24T00:00:00Z"
+        }
+        
+        # Create route
+        create_response = api_client.post(f"{BASE_URL}/api/routes", json=test_route)
+        assert create_response.status_code == 200
+        create_data = create_response.json()
+        assert create_data["success"] == True
+        assert create_data["id"] == test_route["id"]
+        
+        # Verify in list
+        list_response = api_client.get(f"{BASE_URL}/api/routes")
+        routes = list_response.json()
+        found = [r for r in routes if r["id"] == test_route["id"]]
+        assert len(found) == 1
+        assert found[0]["name"] == test_route["name"]
+        
+        # Get single route
+        get_response = api_client.get(f"{BASE_URL}/api/routes/{test_route['id']}")
+        assert get_response.status_code == 200
+        get_data = get_response.json()
+        assert get_data["id"] == test_route["id"]
+        assert get_data["name"] == test_route["name"]
+        
+        # Delete route
+        delete_response = api_client.delete(f"{BASE_URL}/api/routes/{test_route['id']}")
+        assert delete_response.status_code == 200
+        delete_data = delete_response.json()
+        assert delete_data["success"] == True
+        
+        # Verify deleted
+        list_after_delete = api_client.get(f"{BASE_URL}/api/routes")
+        routes_after = list_after_delete.json()
+        not_found = [r for r in routes_after if r["id"] == test_route["id"]]
+        assert len(not_found) == 0
+
+    def test_delete_nonexistent_route(self, api_client):
+        """Test DELETE /api/routes/{id} for non-existent route returns error"""
+        response = api_client.delete(f"{BASE_URL}/api/routes/nonexistent_route_12345")
+        assert response.status_code == 200  # API returns 200 with error message
+        data = response.json()
+        assert "error" in data
+
+
 
 class TestDronePosition:
     """Test drone position endpoints"""
