@@ -162,7 +162,7 @@ _current_position = DronePosition(x=0, y=0, z=5, yaw=0, mode="IDLE")
 @api_router.get("/routes")
 async def list_routes():
     """List all saved routes"""
-    routes = await db.routes.find({}, {"_id": 0}).to_list(100)
+    routes = await db.routes.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return routes
 
 @api_router.get("/routes/{route_id}")
@@ -179,6 +179,14 @@ async def create_route(route: FlightRoute):
     doc = route.model_dump()
     await db.routes.insert_one(doc)
     return {"success": True, "id": route.id}
+
+@api_router.delete("/routes/{route_id}")
+async def delete_route(route_id: str):
+    """Delete a route by ID"""
+    result = await db.routes.delete_one({"id": route_id})
+    if result.deleted_count > 0:
+        return {"success": True, "message": "Route deleted"}
+    return {"error": "Route not found"}
 
 @api_router.get("/routes/demo/generate")
 async def generate_demo_route():
