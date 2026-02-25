@@ -1,0 +1,297 @@
+from fastapi import FastAPI, APIRouter
+from fastapi.responses import FileResponse
+from dotenv import load_dotenv
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import logging
+from pathlib import Path
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
+import uuid
+from datetime import datetime, timezone
+import markdown
+
+
+ROOT_DIR = Path(__file__).parent
+DOCS_DIR = ROOT_DIR.parent / 'docs'
+FIRMWARE_DIR = ROOT_DIR.parent / 'firmware'
+load_dotenv(ROOT_DIR / '.env')
+
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ['DB_NAME']]
+
+# Create the main app without a prefix
+app = FastAPI(title="Visual Homing Documentation API")
+
+# Create a router with the /api prefix
+api_router = APIRouter(prefix="/api")
+
+
+# Define Models
+class StatusCheck(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    client_name: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class StatusCheckCreate(BaseModel):
+    client_name: str
+
+class DocFile(BaseModel):
+    name: str
+    path: str
+    title: str
+
+class DocContent(BaseModel):
+    name: str
+    title: str
+    content: str
+    html: Optional[str] = None
+
+
+# Documentation endpoints
+@api_router.get("/")
+async def root():
+    return {"message": "Visual Homing API", "version": "1.0"}
+
+@api_router.get("/docs/list")
+async def list_docs():
+    """List all documentation files"""
+    docs = []
+    if DOCS_DIR.exists():
+        for f in sorted(DOCS_DIR.glob("*.md")):
+            # Extract title from first line
+            with open(f, 'r', encoding='utf-8') as file:
+                first_line = file.readline().strip()
+                title = first_line.replace('#', '').strip() if first_line.startswith('#') else f.stem
+            docs.append(DocFile(name=f.name, path=str(f), title=title))
+    return docs
+
+@api_router.get("/docs/{filename}")
+async def get_doc(filename: str):
+    """Get documentation file content"""
+    filepath = DOCS_DIR / filename
+    if not filepath.exists():
+        return {"error": "Document not found"}
+    
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Convert markdown to HTML
+    html = markdown.markdown(content, extensions=['tables', 'fenced_code'])
+    
+    # Extract title
+    first_line = content.split('\n')[0]
+    title = first_line.replace('#', '').strip() if first_line.startswith('#') else filename
+    
+    return DocContent(name=filename, title=title, content=content, html=html)
+
+@api_router.get("/firmware/structure")
+async def get_firmware_structure():
+    """Get firmware directory structure"""
+    structure = {"python": [], "cpp": [], "scripts": [], "config": []}
+    
+    if FIRMWARE_DIR.exists():
+        # Python files
+        for f in (FIRMWARE_DIR / 'python').rglob("*.py"):
+            structure["python"].append(str(f.relative_to(FIRMWARE_DIR)))
+        
+        # C++ files
+        for ext in ['*.cpp', '*.hpp', '*.h']:
+            for f in (FIRMWARE_DIR / 'cpp').rglob(ext):
+                structure["cpp"].append(str(f.relative_to(FIRMWARE_DIR)))
+        
+        # Scripts
+        for f in (FIRMWARE_DIR / 'scripts').glob("*.sh"):
+            structure["scripts"].append(str(f.relative_to(FIRMWARE_DIR)))
+        
+        # Config files
+        for f in (FIRMWARE_DIR / 'config').glob("*"):
+            structure["config"].append(str(f.relative_to(FIRMWARE_DIR)))
+    
+    return structure
+
+@api_router.get("/firmware/file/{filepath:path}")
+async def get_firmware_file(filepath: str):
+    """Get firmware file content"""
+    full_path = FIRMWARE_DIR / filepath
+    if not full_path.exists():
+        return {"error": "File not found"}
+    
+    with open(full_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    return {"path": filepath, "content": content}
+
+
+# Route/Flight data endpoints for 3D visualization
+class RoutePoint(BaseModel):
+    x: float
+    y: float
+    z: float
+    yaw: float = 0.0
+    timestamp: float = 0.0
+    is_keyframe: bool = False
+
+class FlightRoute(BaseModel):
+    id: str
+    name: str
+    points: List[RoutePoint]
+    keyframes: List[RoutePoint]
+    total_distance: float
+    created_at: str
+
+class DronePosition(BaseModel):
+    x: float
+    y: float
+    z: float
+    yaw: float
+    pitch: float = 0.0
+    roll: float = 0.0
+    speed: float = 0.0
+    mode: str = "IDLE"
+
+# In-memory storage for demo (in real system - from Pi via WebSocket)
+_demo_routes = {}
+_current_position = DronePosition(x=0, y=0, z=5, yaw=0, mode="IDLE")
+
+@api_router.get("/routes")
+async def list_routes():
+    """List all saved routes"""
+    routes = await db.routes.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return routes
+
+@api_router.get("/routes/{route_id}")
+async def get_route(route_id: str):
+    """Get route by ID"""
+    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+    if route:
+        return route
+    return {"error": "Route not found"}
+
+@api_router.post("/routes")
+async def create_route(route: FlightRoute):
+    """Save a new route"""
+    doc = route.model_dump()
+    await db.routes.insert_one(doc)
+    return {"success": True, "id": route.id}
+
+@api_router.delete("/routes/{route_id}")
+async def delete_route(route_id: str):
+    """Delete a route by ID"""
+    result = await db.routes.delete_one({"id": route_id})
+    if result.deleted_count > 0:
+        return {"success": True, "message": "Route deleted"}
+    return {"error": "Route not found"}
+
+@api_router.get("/routes/demo/generate")
+async def generate_demo_route():
+    """Generate a demo route for testing 3D visualization"""
+    import math
+    import random
+    
+    # Generate spiral path
+    points = []
+    keyframes = []
+    total_distance = 0.0
+    
+    num_points = 100
+    for i in range(num_points):
+        t = i / num_points * 4 * math.pi  # 2 full spirals
+        radius = 20 + t * 2  # expanding spiral
+        
+        x = radius * math.cos(t)
+        y = radius * math.sin(t)
+        z = 5 + i * 0.2 + random.uniform(-0.5, 0.5)  # gradual climb with noise
+        yaw = math.atan2(math.cos(t + 0.1) - math.cos(t), math.sin(t + 0.1) - math.sin(t))
+        
+        point = RoutePoint(
+            x=x, y=y, z=z, yaw=yaw,
+            timestamp=i * 0.5,
+            is_keyframe=(i % 10 == 0)
+        )
+        points.append(point)
+        
+        if point.is_keyframe:
+            keyframes.append(point)
+        
+        if i > 0:
+            prev = points[i-1]
+            total_distance += math.sqrt((x-prev.x)**2 + (y-prev.y)**2 + (z-prev.z)**2)
+    
+    route = FlightRoute(
+        id="demo_route_001",
+        name="Demo Spiral Route",
+        points=[p.model_dump() for p in points],
+        keyframes=[k.model_dump() for k in keyframes],
+        total_distance=total_distance,
+        created_at=datetime.now(timezone.utc).isoformat()
+    )
+    
+    return route
+
+@api_router.get("/position")
+async def get_drone_position():
+    """Get current drone position (simulated)"""
+    return _current_position
+
+@api_router.post("/position")
+async def update_drone_position(pos: DronePosition):
+    """Update drone position (from Pi or simulator)"""
+    global _current_position
+    _current_position = pos
+    return {"success": True}
+
+@api_router.get("/simulation/start/{route_id}")
+async def start_simulation(route_id: str):
+    """Start route simulation for demo"""
+    return {"message": "Simulation would start here", "route_id": route_id}
+
+
+# Status endpoints (original)
+@api_router.post("/status", response_model=StatusCheck)
+async def create_status_check(input: StatusCheckCreate):
+    status_dict = input.model_dump()
+    status_obj = StatusCheck(**status_dict)
+    
+    doc = status_obj.model_dump()
+    doc['timestamp'] = doc['timestamp'].isoformat()
+    
+    _ = await db.status_checks.insert_one(doc)
+    return status_obj
+
+@api_router.get("/status", response_model=List[StatusCheck])
+async def get_status_checks():
+    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+    
+    for check in status_checks:
+        if isinstance(check['timestamp'], str):
+            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    
+    return status_checks
+
+# Include the router in the main app
+app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
