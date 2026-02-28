@@ -2,13 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: '/app/tests/e2e',
-  outputDir: '/root/.emergent/automation_output/20260228_120545/test-results',
+  outputDir: '/root/.emergent/automation_output/20260228_120827/test-results',
   timeout: 60000,
   retries: 0,
   workers: 1,
   reporter: [
     ['line'],
-    ['json', { outputFile: '/root/.emergent/automation_output/20260228_120545/results.json' }],
+    ['json', { outputFile: '/root/.emergent/automation_output/20260228_120827/results.json' }],
   ],
   use: {
     baseURL: 'https://optical-flow-drone.preview.emergentagent.com',
