@@ -32,7 +32,7 @@
 
 ### Зображення пінауту
 
-![Raspberry Pi Zero 2 W Pinout](https://static.prod-images.emergentagent.com/jobs/a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/images/02c1b14f74038c2d7267a3eb1ce721f8c70d4c3f55b421c3be4f8c3c12dc4c45.png)
+![Raspberry Pi Zero 2 W Pinout](https://customer-assets.emergentagent.com/job_a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/artifacts/fywuct00_Raspberry%20Pi%20Zero%20W%202%20pinout.jpg)
 
 ### GPIO Header (40-pin)
 
