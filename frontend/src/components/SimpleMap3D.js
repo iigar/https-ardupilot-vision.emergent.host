@@ -197,7 +197,7 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
       // Arm tube
       const armLen = Math.sqrt(pos[0]*pos[0] + pos[2]*pos[2]) * 0.45;
       const armGeo = new THREE.CylinderGeometry(0.08, 0.08, armLen);
-      const armMat = new THREE.MeshStandardMaterial({ color: 0x27272a, metalness: 0.8, roughness: 0.3 });
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.8, roughness: 0.3 });
       const arm = new THREE.Mesh(armGeo, armMat);
       const angle = Math.atan2(pos[2], pos[0]);
       arm.rotation.z = Math.PI / 2;
