@@ -343,6 +343,7 @@ class SystemSettings(BaseModel):
     web_port: int = 5000
     autostart: bool = True
     stream_enabled: bool = True
+    stream_url: str = "http://192.168.213.234:5000/video_feed"
 
 @api_router.get("/settings")
 async def get_settings():
