@@ -393,6 +393,211 @@ const AboutSection = () => (
   </div>
 );
 
+// Sensor Status Card
+const SensorCard = ({ title, icon: Icon, connected, children, testId }) => (
+  <AnimatedCard className="p-5" data-testid={testId}>
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg border ${connected ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-800 border-zinc-700'}`}>
+          <Icon size={20} className={connected ? 'text-emerald-400' : 'text-zinc-500'} />
+        </div>
+        <h3 className="font-heading font-bold text-white">{title}</h3>
+      </div>
+      <span className={`text-xs font-mono px-2 py-1 rounded-full ${connected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+        {connected ? 'ONLINE' : 'OFFLINE'}
+      </span>
+    </div>
+    {children}
+  </AnimatedCard>
+);
+
+// Metric display row
+const MetricRow = ({ label, value, unit = '', color = 'text-white' }) => (
+  <div className="flex justify-between items-center py-1.5 border-b border-zinc-800/50 last:border-0">
+    <span className="text-zinc-500 text-sm">{label}</span>
+    <span className={`font-mono font-medium ${color}`}>{value}{unit && <span className="text-zinc-600 ml-1">{unit}</span>}</span>
+  </div>
+);
+
+// Smart RTL Phase indicator
+const PhaseIndicator = ({ phase, active }) => {
+  const phases = [
+    { key: 'high_alt', label: 'HIGH ALT', icon: Navigation, desc: 'IMU/Baro' },
+    { key: 'descent', label: 'DESCENT', icon: ArrowDown, desc: 'Зниження' },
+    { key: 'low_alt', label: 'LOW ALT', icon: Radio, desc: 'Optical Flow' },
+    { key: 'precision_land', label: 'LANDING', icon: Target, desc: 'Точна посадка' },
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-2 mt-4" data-testid="smart-rtl-phases">
+      {phases.map((p, idx) => {
+        const isActive = phase === p.key;
+        const isPassed = active && phases.findIndex(x => x.key === phase) > idx;
+        return (
+          <div key={p.key} className={`text-center p-3 rounded-lg border transition-all duration-300
+            ${isActive ? 'bg-cyan-500/20 border-cyan-500/40 scale-105' : isPassed ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-900/50 border-zinc-800'}`}>
+            <p.icon size={18} className={`mx-auto mb-1 ${isActive ? 'text-cyan-400' : isPassed ? 'text-emerald-400' : 'text-zinc-600'}`} />
+            <div className={`text-xs font-mono font-bold ${isActive ? 'text-cyan-400' : isPassed ? 'text-emerald-400' : 'text-zinc-600'}`}>{p.label}</div>
+            <div className="text-[10px] text-zinc-600 mt-0.5">{p.desc}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Telemetry Dashboard Component
+const TelemetryDashboard = () => {
+  const [sensors, setSensors] = useState(null);
+  const [rtlStatus, setRtlStatus] = useState(null);
+  const [rtlConfig, setRtlConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [sensorsRes, rtlRes, configRes] = await Promise.all([
+        axios.get(`${API}/sensors/status`),
+        axios.get(`${API}/smart-rtl/status`),
+        axios.get(`${API}/smart-rtl/config`)
+      ]);
+      setSensors(sensorsRes.data);
+      setRtlStatus(rtlRes.data);
+      setRtlConfig(configRes.data);
+    } catch (e) {
+      console.error("Failed to load telemetry:", e);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 2000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-6 animate-fade-in" data-testid="telemetry-section">
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h2 className="font-heading font-bold text-2xl text-white">Телеметрія</h2>
+          <p className="text-zinc-500 text-sm mt-1">Моніторинг сенсорів та навігації</p>
+        </div>
+        <button
+          onClick={fetchData}
+          className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white transition-colors"
+          data-testid="telemetry-refresh-btn"
+        >
+          <RotateCcw size={18} />
+        </button>
+      </div>
+
+      {/* Sensor Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Optical Flow */}
+        <SensorCard
+          title="MATEK 3901-L0X"
+          icon={sensors?.optical_flow_connected ? Wifi : WifiOff}
+          connected={sensors?.optical_flow_connected}
+          testId="sensor-optical-flow"
+        >
+          <div className="space-y-0.5">
+            <MetricRow label="Optical Flow X" value={sensors?.flow_x?.toFixed(3) || '0.000'} unit="rad/s" />
+            <MetricRow label="Optical Flow Y" value={sensors?.flow_y?.toFixed(3) || '0.000'} unit="rad/s" />
+            <MetricRow
+              label="Якість"
+              value={sensors?.optical_flow_quality || 0}
+              color={sensors?.optical_flow_quality > 50 ? 'text-emerald-400' : 'text-red-400'}
+            />
+          </div>
+        </SensorCard>
+
+        {/* LiDAR */}
+        <SensorCard
+          title="TF-Luna LiDAR"
+          icon={sensors?.lidar_connected ? Wifi : WifiOff}
+          connected={sensors?.lidar_connected}
+          testId="sensor-lidar"
+        >
+          <div className="space-y-0.5">
+            <MetricRow
+              label="Відстань"
+              value={sensors?.lidar_distance_m?.toFixed(2) || '0.00'}
+              unit="m"
+              color={sensors?.lidar_distance_m > 0 ? 'text-cyan-400' : 'text-zinc-500'}
+            />
+            <MetricRow label="Сигнал" value={sensors?.lidar_signal || 0} />
+          </div>
+        </SensorCard>
+      </div>
+
+      {/* Smart RTL Status */}
+      <GlassPanel className="p-6" data-testid="smart-rtl-panel">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg border ${rtlStatus?.active ? 'bg-cyan-500/10 border-cyan-500/20' : 'bg-zinc-800 border-zinc-700'}`}>
+              <Navigation size={20} className={rtlStatus?.active ? 'text-cyan-400' : 'text-zinc-500'} />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-white">Smart RTL</h3>
+              <p className="text-zinc-500 text-xs">Гібридна навігація повернення</p>
+            </div>
+          </div>
+          <span className={`text-xs font-mono px-3 py-1.5 rounded-full border ${rtlStatus?.active ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400' : 'bg-zinc-800 border-zinc-700 text-zinc-500'}`}>
+            {rtlStatus?.active ? rtlStatus.phase?.toUpperCase() : 'IDLE'}
+          </span>
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {[
+            { label: 'Висота', value: `${rtlStatus?.current_altitude?.toFixed(1) || 0}`, unit: 'm' },
+            { label: 'До дому', value: `${rtlStatus?.home_distance?.toFixed(0) || 0}`, unit: 'm' },
+            { label: 'Прогрес', value: `${((rtlStatus?.return_progress || 0) * 100).toFixed(0)}`, unit: '%' },
+            { label: 'Джерело', value: rtlStatus?.nav_source || 'none', unit: '' },
+          ].map(m => (
+            <div key={m.label} className="bg-zinc-900/50 rounded-lg border border-zinc-800 p-3 text-center">
+              <div className="text-xs text-zinc-500 mb-1">{m.label}</div>
+              <div className="font-mono font-bold text-white text-lg">{m.value}<span className="text-zinc-600 text-xs ml-1">{m.unit}</span></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Phase Progress */}
+        <PhaseIndicator phase={rtlStatus?.phase} active={rtlStatus?.active} />
+
+        {/* Config Summary */}
+        {rtlConfig && (
+          <div className="mt-4 pt-4 border-t border-zinc-800">
+            <div className="text-xs font-mono text-zinc-600 mb-2">КОНФІГУРАЦІЯ</div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-zinc-950/50 rounded-lg p-2">
+                <div className="text-xs text-zinc-500">Поріг висоти</div>
+                <div className="font-mono text-sm text-white">{rtlConfig.high_alt_threshold}м</div>
+              </div>
+              <div className="bg-zinc-950/50 rounded-lg p-2">
+                <div className="text-xs text-zinc-500">Початок зниження</div>
+                <div className="font-mono text-sm text-white">{rtlConfig.descent_start_pct * 100}%</div>
+              </div>
+              <div className="bg-zinc-950/50 rounded-lg p-2">
+                <div className="text-xs text-zinc-500">Точна посадка</div>
+                <div className="font-mono text-sm text-white">{rtlConfig.precision_land_alt}м</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </GlassPanel>
+    </div>
+  );
+};
+
 // Main App Component
 function App() {
   const [activeTab, setActiveTab] = useState('map');
