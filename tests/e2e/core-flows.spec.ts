@@ -137,8 +137,11 @@ test.describe('Visual Homing - Core Flows', () => {
     
     // Either route-history list or empty state should be visible
     const hasRoutes = await page.getByTestId('route-history').isVisible().catch(() => false);
-    if (!hasRoutes) {
-      // Check empty state message
+    if (hasRoutes) {
+      // Check that route-history container is visible with routes
+      await expect(page.getByTestId('route-history')).toBeVisible();
+    } else {
+      // Check empty state message only if no routes
       await expect(historySection).toContainText('Немає збережених маршрутів');
     }
   });
