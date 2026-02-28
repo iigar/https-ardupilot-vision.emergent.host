@@ -256,3 +256,134 @@ class TestFirmware:
         # Should have some files
         total_files = len(data["python"]) + len(data["cpp"]) + len(data["scripts"]) + len(data["config"])
         assert total_files > 0, "Should have some firmware files"
+
+
+class TestSensors:
+    """Test sensor status endpoints (MATEK 3901-L0X Optical Flow + TF-Luna LiDAR)"""
+    
+    def test_get_sensor_status(self, api_client):
+        """Test GET /api/sensors/status returns sensor data"""
+        response = api_client.get(f"{BASE_URL}/api/sensors/status")
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Check optical flow fields
+        assert "optical_flow_connected" in data
+        assert "optical_flow_quality" in data
+        assert "flow_x" in data
+        assert "flow_y" in data
+        
+        # Check LiDAR fields
+        assert "lidar_connected" in data
+        assert "lidar_distance_m" in data
+        assert "lidar_signal" in data
+
+    def test_post_sensor_status(self, api_client):
+        """Test POST /api/sensors/status updates sensor data"""
+        sensor_data = {
+            "optical_flow_connected": True,
+            "optical_flow_quality": 85,
+            "flow_x": 1.5,
+            "flow_y": -0.3,
+            "lidar_connected": True,
+            "lidar_distance_m": 2.5,
+            "lidar_signal": 200
+        }
+        
+        response = api_client.post(f"{BASE_URL}/api/sensors/status", json=sensor_data)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] == True
+        
+        # Verify with GET
+        get_response = api_client.get(f"{BASE_URL}/api/sensors/status")
+        updated_data = get_response.json()
+        assert updated_data["optical_flow_connected"] == True
+        assert updated_data["optical_flow_quality"] == 85
+        assert updated_data["lidar_connected"] == True
+        assert updated_data["lidar_distance_m"] == 2.5
+
+
+class TestSmartRTL:
+    """Test Smart RTL endpoints (hybrid navigation: IMU/Baro >50m, Optical Flow + Visual <50m)"""
+    
+    def test_get_smart_rtl_status(self, api_client):
+        """Test GET /api/smart-rtl/status returns status"""
+        response = api_client.get(f"{BASE_URL}/api/smart-rtl/status")
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Check required fields
+        assert "active" in data
+        assert "phase" in data
+        assert "current_altitude" in data
+        assert "home_distance" in data
+        assert "return_progress" in data
+        assert "nav_source" in data
+        assert "target_altitude" in data
+
+    def test_post_smart_rtl_status(self, api_client):
+        """Test POST /api/smart-rtl/status updates status"""
+        rtl_data = {
+            "active": True,
+            "phase": "descending",
+            "current_altitude": 35.0,
+            "home_distance": 150.0,
+            "return_progress": 0.65,
+            "nav_source": "optical_flow",
+            "target_altitude": 10.0
+        }
+        
+        response = api_client.post(f"{BASE_URL}/api/smart-rtl/status", json=rtl_data)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] == True
+        
+        # Verify with GET
+        get_response = api_client.get(f"{BASE_URL}/api/smart-rtl/status")
+        updated_data = get_response.json()
+        assert updated_data["active"] == True
+        assert updated_data["phase"] == "descending"
+        assert updated_data["nav_source"] == "optical_flow"
+        assert updated_data["return_progress"] == 0.65
+
+    def test_get_smart_rtl_config(self, api_client):
+        """Test GET /api/smart-rtl/config returns configuration defaults"""
+        response = api_client.get(f"{BASE_URL}/api/smart-rtl/config")
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Check expected config fields
+        assert "high_alt_threshold" in data
+        assert data["high_alt_threshold"] == 50.0  # 50m threshold for hybrid nav
+        
+        assert "precision_land_alt" in data
+        assert "descent_rate" in data
+        assert "high_alt_speed" in data
+        assert "low_alt_speed" in data
+        assert "flow_min_quality" in data
+        assert "visual_min_confidence" in data
+
+
+class TestDocumentationUpdated:
+    """Test updated documentation with 9 documents"""
+    
+    def test_docs_list_count(self, api_client):
+        """Test GET /api/docs/list returns 9 documents"""
+        response = api_client.get(f"{BASE_URL}/api/docs/list")
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert len(data) == 9, f"Expected 9 documents, got {len(data)}"
+        
+        # Verify expected documents exist
+        doc_names = [d["name"] for d in data]
+        expected_docs = [
+            "01_raspberry_pi_setup.md",
+            "02_wiring_diagrams.md",
+            "03_ardupilot_config.md",
+            "04_python_implementation.md",
+            "08_testing.md"
+        ]
+        for expected in expected_docs:
+            assert expected in doc_names, f"Missing document: {expected}"
