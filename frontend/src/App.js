@@ -752,6 +752,13 @@ function App() {
               testId="tab-history"
             />
             <TabButton 
+              active={activeTab === 'telemetry'} 
+              icon={Activity} 
+              label="Телеметрія" 
+              onClick={() => setActiveTab('telemetry')}
+              testId="tab-telemetry"
+            />
+            <TabButton 
               active={activeTab === 'docs'} 
               icon={FileText} 
               label="Документація" 
@@ -807,6 +814,10 @@ function App() {
               loading={routesLoading}
             />
           </div>
+        )}
+
+        {activeTab === 'telemetry' && (
+          <TelemetryDashboard />
         )}
 
         {activeTab === 'docs' && (
