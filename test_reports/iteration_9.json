@@ -1,0 +1,83 @@
+{
+  "summary": "Update mode testing complete for v2.2 new features. All 28 backend tests passed, all 30 frontend tests passed (10 core-flows, 8 route-history, 12 map-simulation). New features tested: Settings page CRUD, Video stream placeholder, Route export (JSON/KML), WebSocket endpoint available on localhost:8001. Ukrainian UI confirmed.",
+  "mode": "update",
+  "baseline_commit": "0f3e4f22c259892935e62111e42eae82fd4a5bef",
+  "head_commit": "9b3f08e6049cd4934bbfda036cd0b7e0df40167a",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 3,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": [
+    "/app/tests/e2e/core-flows.spec.ts",
+    "/app/tests/e2e/route-history.spec.ts"
+  ],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_api.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/tests/e2e/core-flows.spec.ts",
+    "/app/tests/e2e/map-simulation.spec.ts",
+    "/app/tests/e2e/route-history.spec.ts"
+  ],
+  "action_items": [],
+  "updated_files": [
+    "/app/backend/tests/test_api.py",
+    "/app/tests/e2e/core-flows.spec.ts",
+    "/app/tests/e2e/route-history.spec.ts"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28)",
+    "frontend": "100% (30/30)"
+  },
+  "seed_data_creation": "Test routes created dynamically with TEST_ prefix and timestamps for isolation, cleaned up after each test",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All v2.2 features tested and working: Settings page with camera/MAVLink/Optical Flow/LiDAR/Smart RTL sections, Video stream placeholder in Telemetry tab, Route export buttons (JSON/KML) visible on hover in route history, WebSocket /ws/telemetry available on localhost:8001 (not proxied via external URL). Version badge updated to v2.2. All existing features still work: tabs, routes, sensors, smart-rtl, docs.",
+  "new_features_tested": {
+    "settings_crud": {
+      "GET_api_settings": "PASS - Returns all settings with camera, MAVLink, Optical Flow, LiDAR, Smart RTL, System sections",
+      "POST_api_settings": "PASS - Saves settings to MongoDB and persists",
+      "POST_api_settings_reset": "PASS - Resets all settings to defaults"
+    },
+    "video_stream": {
+      "GET_api_stream_status": "PASS - Returns available=false, url=/api/stream/video, type=mjpeg",
+      "ui_component": "PASS - Video stream placeholder visible in Telemetry tab with OFFLINE badge"
+    },
+    "route_export": {
+      "GET_api_routes_id_export_json": "PASS - Returns route data as JSON",
+      "GET_api_routes_id_export_kml": "PASS - Returns valid KML XML with coordinates for Google Earth",
+      "ui_buttons": "PASS - Export JSON and KML buttons visible on hover in route history (data-testid='export-json-{id}', 'export-kml-{id}')"
+    },
+    "websocket": {
+      "ws_telemetry": "NOT_TESTED_VIA_PROXY - WebSocket /ws/telemetry works on localhost:8001 but not through external preview URL proxy"
+    },
+    "settings_ui": {
+      "tab_settings": "PASS - Settings tab visible with correct icon",
+      "settings_section": "PASS - All sections render: Camera, MAVLink, Optical Flow (MATEK 3901-L0X), LiDAR (TF-Luna), Smart RTL, System",
+      "save_reset_buttons": "PASS - Save and Reset buttons work with toast notifications"
+    }
+  },
+  "api_endpoints_verified": {
+    "new_endpoints": [
+      "GET /api/settings - 200 OK",
+      "POST /api/settings - 200 OK with success=true",
+      "POST /api/settings/reset - 200 OK with default values",
+      "GET /api/stream/status - 200 OK",
+      "GET /api/routes/{id}/export/json - 200 OK",
+      "GET /api/routes/{id}/export/kml - 200 OK with KML content"
+    ],
+    "existing_endpoints_regression": "All 21 original endpoints still working"
+  }
+}
