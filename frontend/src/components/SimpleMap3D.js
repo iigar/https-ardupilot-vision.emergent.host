@@ -5,7 +5,7 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Pure Three.js 3D Map with improved visuals
-const SimpleMap3D = ({ route: externalRoute, isSimulating }) => {
+const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0, smartRTLMode = false, onTelemetryUpdate }) => {
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
   const sceneRef = useRef(null);
@@ -15,6 +15,12 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating }) => {
   const [route, setRoute] = useState(null);
   const progressRef = useRef(0);
   const clockRef = useRef(new THREE.Clock());
+  const speedRef = useRef(speedMultiplier);
+  const smartRTLRef = useRef(smartRTLMode);
+  const rtlPathRef = useRef(null);
+
+  useEffect(() => { speedRef.current = speedMultiplier; }, [speedMultiplier]);
+  useEffect(() => { smartRTLRef.current = smartRTLMode; }, [smartRTLMode]);
 
   // Use external route if provided
   useEffect(() => {
