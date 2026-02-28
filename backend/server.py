@@ -482,17 +482,24 @@ async def websocket_telemetry(websocket: WebSocket):
                 msg = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
                 cmd = json.loads(msg)
                 if cmd.get("type") == "update_sensors":
-                    global _sensor_status
-                    _sensor_status = SensorStatus(**cmd.get("data", {}))
+                    _update_sensor_status(cmd.get("data", {}))
                 elif cmd.get("type") == "update_rtl":
-                    global _smart_rtl_status
-                    _smart_rtl_status = SmartRTLStatus(**cmd.get("data", {}))
+                    _update_rtl_status(cmd.get("data", {}))
             except asyncio.TimeoutError:
                 pass
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
     except Exception:
         ws_manager.disconnect(websocket)
+
+
+def _update_sensor_status(data):
+    global _sensor_status
+    _sensor_status = SensorStatus(**data)
+
+def _update_rtl_status(data):
+    global _smart_rtl_status
+    _smart_rtl_status = SmartRTLStatus(**data)
 
 
 # Status endpoints (original)
