@@ -32,12 +32,12 @@ const TabButton = ({ active, icon: Icon, label, onClick, testId }) => (
   <button
     onClick={onClick}
     data-testid={testId}
-    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300
+    className={`flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap shrink-0
                 ${active 
                   ? 'bg-cyan-500 text-black shadow-glow' 
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
   >
-    <Icon size={18} />
+    <Icon size={16} className="md:w-[18px] md:h-[18px]" />
     <span className="hidden sm:inline">{label}</span>
   </button>
 );
