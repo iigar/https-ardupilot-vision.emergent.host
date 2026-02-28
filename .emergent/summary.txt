@@ -1,0 +1,151 @@
+<analysis>**original_problem_statement:**
+Чи можеш ти створити прошивку для того, щоб Raspberry Pi Zero міг використовувати нічну камеру як оптичну стабілізацію?
+Повний образ ОС Raspbery Pi Zero, та документація по налаштуванню.
+Мається наувазі оптична навігація для мультикоптерного дрона на базі Ardupilot.
+Камера Caddx termal 256.
+
+PRODUCT REQUIREMENTS:
+- Create a firmware/software solution for a Raspberry Pi Zero 2 W to provide optical navigation (Visual Homing) for an ArduPilot-based multicopter.
+- The system should use a camera to record a flight path and be able to navigate back along it (Teach & Repeat).
+- The solution must support a standard Raspberry Pi camera and an analog camera via a USB capture card.
+- A web interface is required for monitoring, viewing the camera feed, and documentation.
+- **(New)** Add support for MATEK 3901-L0X (Optical Flow) and TF-Luna (LiDAR) sensors.
+- **(New)** Implement a Smart RTL logic that uses IMU/Barometer for high-altitude return and switches to visual/optical flow navigation at lower altitudes (<50m) for precision landing.
+- **(New)** The system should allow for flights up to 5km at 200m altitude, with the understanding that visual data is only used at low altitudes.
+- **(New)** Update all documentation and setup instructions to reflect the new hardware and logic.
+- **(Done)** The system must be configured to auto-start on Raspberry Pi boot.
+- **(Done)** A web interface is required for monitoring system status, viewing camera feed features, and reviewing documentation.
+- **(Done)** A 3D map visualization of the recorded flight path should be added to the web interface.
+- **(Done)** The core logic should be available in Python.
+
+**User's preferred language**: Ukrainian
+
+**what currently exists?**
+A full-stack application with a Flask backend and a React frontend. The backend () handles API requests and documentation serving. The application now uses MongoDB to persist flight routes. The frontend () features a Modern Dark theme with a 3D route visualization map, a route history page, and documentation viewer. The project also includes a standalone Python script () for live streaming the Pi camera feed to a browser. The user has been extensively guided through setting up their Raspberry Pi and testing the camera.
+
+**Last working item**:
+- **Last item agent was working:** The user requested a major feature update: integrate MATEK 3901-L0X (Optical Flow) and TF-Luna (LiDAR) sensors, and implement a Smart RTL logic for hybrid high/low altitude navigation. The agent acknowledged the request and was about to begin implementation.
+- **Status:** NOT STARTED
+- **Agent Testing Done:** N/A
+- **Which testing method agent to use?** both
+- **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+There are no pending issues.
+
+**In progress Task List**:
+There are no in-progress tasks. The previous UI/DB work was completed and tested.
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks:**
+  - **P0: Implement Hybrid Navigation System:**
+    - **Backend:**
+      - Modify the Python backend () to integrate data from the MATEK 3901-L0X (Optical Flow) and TF-Luna (LiDAR).
+      - Implement the Smart RTL logic:
+        - During RTL, if altitude > 50m, rely on ArduPilot's IMU/Baro navigation.
+        - Implement a gradual descent strategy (e.g., start descending after 50% of the return path is covered).
+        - When altitude < 50m, activate visual/optical flow navigation to find recorded keyframes for a precision landing.
+    - **Configuration:**
+      - Update ArduPilot parameters in the documentation () to enable the new sensors (MATEK 3901-L0X , TF-Luna ).
+    - **Documentation:**
+      - Update all setup instructions, wiring diagrams, and usage guides to include the new sensors and explain the hybrid RTL functionality.
+  - **P1: Integrate Real-time Video Stream:** Merge the functionality of the standalone  into the main application's web UI so the video appears on the dashboard.
+  - **P2: Web UI Configuration Page:** Add a settings page to the web interface to allow users to configure parameters (e.g., camera settings, algorithm thresholds, RTL strategy) without editing files on the Pi.
+
+**Completed work in this session**
+- **Critical Bug Fix:** Resolved the Preview Unavailable error by identifying and fixing React Three Fiber rendering issues in  and .
+- **UI/UX Overhaul:** Completely redesigned the frontend with a Modern Dark theme, glassmorphism effects, and improved component styling (, ).
+- **Database Integration:** Integrated MongoDB into the Flask backend to persist flight routes. Implemented full CRUD functionality (Create, Read, Delete) for routes via API endpoints and the UI.
+- **Feature Completion:** Successfully implemented and verified the 3D flight path visualization.
+- **Full-Stack Testing:** Conducted comprehensive backend and frontend testing using the , achieving 100% pass rates after the major UI and DB changes.
+- **Live Camera Streaming:** Created and helped the user debug a standalone Python script () to stream the Pi camera feed over the network with low latency.
+- **User Support & Consultation:**
+  - Provided extensive, step-by-step guidance for setting up a Raspberry Pi Zero 2 W from scratch (installing OS, SSH, WiFi, dependencies, git).
+  - Analyzed a competitor's firmware image to determine their technical approach (closed-source C++ binaries with a license server).
+  - Researched and provided hardware recommendations (MATEK 3901-L0X, TF-Luna) based on the user's performance goals.
+  - Explained complex navigation concepts like Visual Odometry vs. Optical Flow vs. Terrain Matching.
+- **Documentation:** Updated the camera calibration section in .
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Backend:** Flask, MongoDB (via )
+- **Frontend:** React, Three.js, Chart.js
+- **Core Logic:** Visual Odometry (OpenCV), MAVLink Communication ()
+- **Deployment:** Raspberry Pi Zero 2 W, ArduPilot
+- **Hardware:** Pi Camera, **(Upcoming)** MATEK 3901-L0X, TF-Luna
+
+**key DB schema**
+- **database:** 
+  - **collection:** 
+    - : ObjectId
+    - : String (e.g., Route 2025-12-27 14:30:15)
+    - : ISODate
+    - : Array of coordinate objects 
+
+**changes in tech stack**
+- Added **MongoDB** as the database for route persistence.
+
+**All files of reference**
+- : Contains the new API endpoints for interacting with MongoDB.
+- : Contains the new Modern Dark UI, including tabs for the map, route history, and documentation.
+- : The core logic file that needs to be updated for the new sensors and RTL strategy.
+- : Contains camera calibration data and will need parameters for the new sensors.
+- : The entire documentation folder needs to be reviewed and updated to reflect the new hardware and software logic.
+
+**Areas that need refactoring**:
+- The camera streaming logic in  is a separate Flask app. It should be integrated into the main backend  to provide a single, unified service.
+
+**key api endpoints**
+- : Fetches a specific markdown documentation file.
+- : Fetches all saved flight routes from MongoDB.
+- : Saves a new flight route to MongoDB.
+- : Deletes a specific flight route from MongoDB.
+
+**Critical Info for New Agent**
+The project's scope has evolved significantly. The immediate priority is to implement the **hybrid navigation system** as requested by the user. This involves integrating new hardware (MATEK 3901-L0X, TF-Luna) and creating a Smart RTL logic that combines high-altitude IMU/Baro navigation with low-altitude optical flow/visual navigation. This is a major change requiring updates to the Python backend, ArduPilot configuration, and all project documentation. Start by planning the modifications to the  modules and outlining the necessary documentation changes.
+
+**documents and test reports created in this job**
+-  (Updated)
+- 
+- 
+-  (New script for camera testing)
+-  (New script for simple Flask server test)
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** What is the minimum flight distance at low altitude (<50m) to guarantee finding reference points for RTL?
+2.  **User:** Which sensor is better: Benewake LiDARs or MATEK 3901-L0X?
+3.  **Agent:** Recommended 300-700m for recording and identified MATEK 3901-L0X as the best choice due to its built-in Optical Flow.
+4.  **User:** Please add support for both MATEK 3901-L0X and TF-Luna. Add the proposed flight logic. Update all commands and instructions for the entire project based on these changes and test everything.
+5.  **Agent:** Agreed to perform the full project update.
+6.  **User:** How is RTL altitude calculated? Can the descent be configured to happen after a certain part of the return path?
+7.  **Agent:** Explained ArduPilot RTL altitude parameters and proposed three ways to implement Smart RTL Descent (LUA script, Python code on Pi, or a Mission). Recommended a strategy for a 5km flight.
+8.  **User:** For a 5km flight at 200m, what happens if I enable RTL?
+9.  **Agent:** Explained that Visual Homing alone won't work at that altitude and the drone would return with a significant drift using only its IMU.
+10. **User:** If I use a better sensor (PX4Flow) and the optimizations from the other system, what is the maximum altitude?
+11. **Agent:** Explained that with PX4Flow + LiDAR, the realistic maximum is ~50m, and flight at 1000m is achieved using Barometer + IMU, not optical navigation.
+
+**Project Health Check:**
+- **Broken:** None.
+- **Mocked:** None. The flight path data is now persisted in a real database.
+
+**3rd Party Integrations**
+- **OpenCV:** For computer vision tasks.
+- **Pymavlink:** For MAVLink communication with ArduPilot.
+- **React:** Frontend framework.
+- **Three.js:** For 3D rendering.
+- **Flask:** Backend framework.
+- **MongoDB:** Database for persisting flight routes.
+
+**Testing status**
+- **Testing agent used after significant changes:** YES. The last major feature (UI redesign + DB integration) was fully tested and passed.
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:** None. The testing agent created and ran tests in memory.
+- **Known regressions:** None.
+
+**Credentials to test flow:**
+N/A
+
+**What agent forgot to execute**
+The agent was about to start implementing the Smart RTL and new sensor integration when the job was forked. The next agent should pick this up as the highest priority task.</analysis>
