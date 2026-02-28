@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Map, FileText, Code, Info, History, Play, Square, RotateCcw, Plus, Trash2, Save, X, Plane, Download } from "lucide-react";
+import { Map, FileText, Code, Info, History, Play, Square, RotateCcw, Plus, Trash2, Save, X, Plane, Download, Activity, Radio, ArrowDown, Navigation, Wifi, WifiOff, Target } from "lucide-react";
 import SimpleMap3D from "./components/SimpleMap3D";
 import { Toaster, toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
