@@ -1192,6 +1192,10 @@ function App() {
             <AboutSection />
           </div>
         )}
+
+        {activeTab === 'settings' && (
+          <SettingsPage />
+        )}
       </main>
 
       {/* Footer */}
