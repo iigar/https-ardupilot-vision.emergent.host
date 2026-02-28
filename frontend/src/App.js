@@ -374,7 +374,7 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
       </div>
 
       {/* Bottom Control Panel */}
-      <GlassPanel className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center gap-3 px-6 py-4">
+      <GlassPanel className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-4 overflow-x-auto scrollbar-hide"  data-testid="map-controls">
         <button
           onClick={() => { setIsSimulating(!isSimulating); if (isSimulating) { setSmartRTLMode(false); setTelemetry(null); } }}
           className={`flex items-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300
