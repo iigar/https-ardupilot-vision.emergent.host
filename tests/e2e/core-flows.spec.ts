@@ -141,4 +141,45 @@ test.describe('Visual Homing - Core Flows', () => {
       await expect(historySection).toContainText('Немає збережених маршрутів');
     }
   });
+
+  test('Telemetry tab displays sensor monitoring dashboard', async ({ page }) => {
+    // Navigate to Telemetry tab
+    await navigateToTab(page, 'tab-telemetry');
+    
+    // Verify telemetry section is visible
+    const telemetrySection = page.getByTestId('telemetry-section');
+    await expect(telemetrySection).toBeVisible();
+    
+    // Check header text
+    await expect(telemetrySection).toContainText('Телеметрія');
+    await expect(telemetrySection).toContainText('Моніторинг сенсорів та навігації');
+    
+    // Check refresh button is visible
+    await expect(page.getByTestId('telemetry-refresh-btn')).toBeVisible();
+    
+    // Check sensor cards are displayed
+    const opticalFlowCard = page.getByTestId('sensor-optical-flow');
+    await expect(opticalFlowCard).toBeVisible();
+    await expect(opticalFlowCard).toContainText('MATEK 3901-L0X');
+    
+    const lidarCard = page.getByTestId('sensor-lidar');
+    await expect(lidarCard).toBeVisible();
+    await expect(lidarCard).toContainText('TF-Luna LiDAR');
+    
+    // Check Smart RTL panel
+    const rtlPanel = page.getByTestId('smart-rtl-panel');
+    await expect(rtlPanel).toBeVisible();
+    await expect(rtlPanel).toContainText('Smart RTL');
+    await expect(rtlPanel).toContainText('Гібридна навігація повернення');
+    
+    // Check phase indicators are visible
+    const phaseIndicators = page.getByTestId('smart-rtl-phases');
+    await expect(phaseIndicators).toBeVisible();
+    
+    // Check RTL phase indicator labels
+    await expect(phaseIndicators).toContainText('HIGH ALT');
+    await expect(phaseIndicators).toContainText('DESCENT');
+    await expect(phaseIndicators).toContainText('LOW ALT');
+    await expect(phaseIndicators).toContainText('LANDING');
+  });
 });
