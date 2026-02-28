@@ -157,14 +157,17 @@ test.describe('Visual Homing - Core Flows', () => {
     // Check refresh button is visible
     await expect(page.getByTestId('telemetry-refresh-btn')).toBeVisible();
     
-    // Wait for sensor cards to load (they appear after API data fetching)
-    const opticalFlowCard = page.getByTestId('sensor-optical-flow');
-    await expect(opticalFlowCard).toBeVisible({ timeout: 10000 });
-    await expect(opticalFlowCard).toContainText('MATEK 3901-L0X');
+    // Check sensor cards are displayed (using text locators since data-testid not forwarded by AnimatedCard)
+    // MATEK 3901-L0X Optical Flow sensor
+    await expect(page.locator('h3:has-text("MATEK 3901-L0X")')).toBeVisible({ timeout: 10000 });
+    await expect(telemetrySection).toContainText('Optical Flow X');
+    await expect(telemetrySection).toContainText('Optical Flow Y');
+    await expect(telemetrySection).toContainText('Якість');
     
-    const lidarCard = page.getByTestId('sensor-lidar');
-    await expect(lidarCard).toBeVisible();
-    await expect(lidarCard).toContainText('TF-Luna LiDAR');
+    // TF-Luna LiDAR sensor
+    await expect(page.locator('h3:has-text("TF-Luna LiDAR")')).toBeVisible();
+    await expect(telemetrySection).toContainText('Відстань');
+    await expect(telemetrySection).toContainText('Сигнал');
     
     // Check Smart RTL panel
     const rtlPanel = page.getByTestId('smart-rtl-panel');
