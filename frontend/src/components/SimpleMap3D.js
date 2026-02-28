@@ -615,21 +615,27 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
       // Loop or stop
       if (progressRef.current >= totalLen - 1) {
         progressRef.current = 0;
-        rtlPathRef.current = null;
-        if (isRTL) {
-          // Re-generate for next loop
-          smartRTLRef.current = smartRTLMode;
-        }
+        // Return early - next frame will start clean
+        frameId = requestAnimationFrame(simulateStep);
+        return;
       }
       
-      const currentIdx = isRTL
-        ? (Math.floor(progressRef.current) < rtlPathRef.current?.outPath.length
-            ? Math.floor(progressRef.current)
-            : Math.floor(progressRef.current) - (rtlPathRef.current?.outPath.length || 0))
-        : Math.floor(progressRef.current);
-      const currentPoints = isRTL
-        ? (Math.floor(progressRef.current) < (rtlPathRef.current?.outPath.length || 0) ? rtlPathRef.current.outPath : rtlPathRef.current.returnPath)
-        : points;
+      // Safe access - re-check RTL path is still valid
+      let currentIdx, currentPoints;
+      if (isRTL && rtlPathRef.current) {
+        const rtl = rtlPathRef.current;
+        const rawIdx = Math.floor(progressRef.current);
+        if (rawIdx < rtl.outPath.length) {
+          currentIdx = rawIdx;
+          currentPoints = rtl.outPath;
+        } else {
+          currentIdx = rawIdx - rtl.outPath.length;
+          currentPoints = rtl.returnPath;
+        }
+      } else {
+        currentIdx = Math.floor(progressRef.current);
+        currentPoints = points;
+      }
       
       const point = currentPoints[Math.min(currentIdx, currentPoints.length - 1)];
       const nextPoint = currentPoints[Math.min(currentIdx + 1, currentPoints.length - 1)];
