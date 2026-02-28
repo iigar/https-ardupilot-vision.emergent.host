@@ -390,6 +390,21 @@ class TestDocumentationUpdated:
             assert expected in doc_names, f"Missing document: {expected}"
 
 
+    def test_get_sitl_doc(self, api_client):
+        """Test GET /api/docs/09_sitl_testing.md returns SITL documentation"""
+        response = api_client.get(f"{BASE_URL}/api/docs/09_sitl_testing.md")
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert "name" in data
+        assert data["name"] == "09_sitl_testing.md"
+        assert "title" in data
+        assert "SITL" in data["title"]
+        assert "content" in data
+        assert "SITL" in data["content"]
+        assert "ArduPilot" in data["content"]
+
+
 class TestSettings:
     """Test Settings CRUD endpoints (NEW: v2.2 feature)"""
     
