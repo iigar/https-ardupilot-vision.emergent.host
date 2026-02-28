@@ -81,7 +81,7 @@ o = вільні для інших потреб
 
 ### Зображення пінауту
 
-![Mateksys H743-Slim V3 Pinout](https://static.prod-images.emergentagent.com/jobs/a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/images/8fb377430bcb645f606c29ae9e62b99cb128f0053cbe889119aebb291c9c0e58.png)
+![Mateksys H743-Slim V3 Pinout](https://customer-assets.emergentagent.com/job_a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/artifacts/2saekv7e_poletnyj-kontroller-matek-h743-slim-v3-3.jpg)
 
 ### Основні порти
 
@@ -109,7 +109,7 @@ o = вільні для інших потреб
 
 ### Зображення підключення
 
-![MATEK 3901-L0X Wiring](https://static.prod-images.emergentagent.com/jobs/a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/images/7150a6f1176c16a2e5b4b0cf74aa368ee24109e9db4f840c08dd4b742ea559ee.png)
+![MATEK 3901-L0X Optical Flow + LiDAR](https://customer-assets.emergentagent.com/job_a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/artifacts/6j4mtw68_opticheskij-sensor-lidar-matek-3901-l0x-1.jpg)
 
 ### Характеристики MATEK 3901-L0X
 
@@ -181,7 +181,9 @@ RNGFND2_MAX_CM = 200     # 2.0m максимум
 
 ### Зображення підключення
 
-![TF-Luna Wiring](https://static.prod-images.emergentagent.com/jobs/a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/images/93a39649d3630bf78c3b8672dd391a74bd01f9b88f6251e155e081e1badc671f.png)
+![TF-Luna LiDAR Sensor](https://customer-assets.emergentagent.com/job_a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/artifacts/29geo9h7_TF-LUNA.webp)
+
+![TF-Luna Pinout](https://customer-assets.emergentagent.com/job_a3acf624-7531-4b1f-ac69-62b1ab2e0ff6/artifacts/0ufh5hha_TF-LUNA2.avif)
 
 ### Характеристики TF-Luna
 
