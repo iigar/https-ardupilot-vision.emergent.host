@@ -28,13 +28,14 @@ test.describe('Visual Homing - Core Flows', () => {
   });
 
   test('Navigation tabs are visible and 3D Map is active by default', async ({ page }) => {
-    // Check all tabs are visible (including NEW Telemetry tab)
+    // Check all tabs are visible (including NEW Telemetry tab and Settings tab)
     await expect(page.getByTestId('tab-map')).toBeVisible();
     await expect(page.getByTestId('tab-history')).toBeVisible();
-    await expect(page.getByTestId('tab-telemetry')).toBeVisible();  // NEW: Telemetry tab
+    await expect(page.getByTestId('tab-telemetry')).toBeVisible();  // Telemetry tab
     await expect(page.getByTestId('tab-docs')).toBeVisible();
     await expect(page.getByTestId('tab-firmware')).toBeVisible();
     await expect(page.getByTestId('tab-about')).toBeVisible();
+    await expect(page.getByTestId('tab-settings')).toBeVisible();  // NEW: Settings tab (v2.2)
     
     // 3D Map tab should be active by default - check for cyan-500 bg class instead of 'active'
     const mapTab = page.getByTestId('tab-map');
