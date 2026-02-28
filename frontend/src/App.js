@@ -563,44 +563,60 @@ const PhaseIndicator = ({ phase, active }) => {
 // Video Stream Component
 const VideoStream = () => {
   const [streamStatus, setStreamStatus] = useState(null);
-  const [streamError, setStreamError] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/stream/status`).then(r => setStreamStatus(r.data)).catch(() => {});
   }, []);
 
+  const isHttps = window.location.protocol === 'https:';
+  const streamUrl = streamStatus?.url || '';
+  const isStreamHttp = streamUrl.startsWith('http://');
+  const mixedContentBlocked = isHttps && isStreamHttp;
+
   return (
     <AnimatedCard className="p-5 overflow-hidden" data-testid="video-stream">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg border ${streamStatus?.available && !streamError ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-800 border-zinc-700'}`}>
-            <Video size={20} className={streamStatus?.available && !streamError ? 'text-emerald-400' : 'text-zinc-400'} />
+          <div className={`p-2 rounded-lg border ${streamStatus?.available && !mixedContentBlocked ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-zinc-800 border-zinc-700'}`}>
+            <Video size={20} className={streamStatus?.available && !mixedContentBlocked ? 'text-emerald-400' : 'text-zinc-400'} />
           </div>
           <h3 className="font-heading font-bold text-white">Камера</h3>
         </div>
-        <span className={`text-xs font-mono px-2 py-1 rounded-full ${streamStatus?.available && !streamError ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
-          {streamStatus?.available && !streamError ? 'LIVE' : 'OFFLINE'}
+        <span className={`text-xs font-mono px-2 py-1 rounded-full ${
+          mixedContentBlocked ? 'bg-amber-500/20 text-amber-400' :
+          streamStatus?.available ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+          {mixedContentBlocked ? 'HTTPS' : streamStatus?.available ? 'LIVE' : 'OFFLINE'}
         </span>
       </div>
       <div className="aspect-video bg-zinc-900 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
-        {streamStatus?.available ? (
-          <img 
-            src={streamStatus.url} 
-            alt="Camera Feed" 
-            className="w-full h-full object-contain"
-            onError={() => setStreamError(true)}
-            onLoad={() => setStreamError(false)}
+        {streamStatus?.available && !mixedContentBlocked ? (
+          <iframe 
+            src={streamUrl}
+            title="Camera Feed" 
+            className="w-full h-full border-0"
+            allow="autoplay"
             data-testid="video-feed"
           />
-        ) : null}
-        {(!streamStatus?.available || streamError) && (
+        ) : (
           <div className="text-center p-6">
             <Video size={48} className="mx-auto text-zinc-700 mb-3" />
-            <p className="text-zinc-500 text-sm">
-              {streamError ? 'Не вдалося підключитись до стріму' : 'Стрім вимкнено'}
-            </p>
-            <p className="text-zinc-600 text-xs mt-1 font-mono">{streamStatus?.url || ''}</p>
-            <p className="text-zinc-600 text-xs mt-2">Налаштуйте URL в <span className="text-cyan-500">Налаштування → Камера</span></p>
+            {mixedContentBlocked ? (
+              <>
+                <p className="text-amber-400 text-sm font-medium">HTTPS блокує HTTP стрім</p>
+                <p className="text-zinc-500 text-xs mt-2">Стрім працює тільки через HTTP.</p>
+                <p className="text-zinc-500 text-xs">Відкрийте додаток на Pi або через HTTP.</p>
+                <a href={streamUrl} target="_blank" rel="noreferrer" 
+                   className="inline-block mt-3 px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 text-xs font-mono hover:bg-cyan-500/30 transition-colors">
+                  Відкрити стрім напряму
+                </a>
+              </>
+            ) : (
+              <>
+                <p className="text-zinc-500 text-sm">Стрім вимкнено</p>
+                <p className="text-zinc-600 text-xs mt-1 font-mono">{streamUrl}</p>
+                <p className="text-zinc-600 text-xs mt-2">Налаштуйте URL в <span className="text-cyan-500">Налаштування</span></p>
+              </>
+            )}
           </div>
         )}
       </div>
