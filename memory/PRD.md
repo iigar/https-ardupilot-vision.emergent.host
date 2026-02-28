@@ -1,48 +1,56 @@
 # Visual Homing System - PRD
 
-## Дата оновлення: 28.02.2026
+## Оновлено: 28.02.2026
 
-## Оригінальна постановка задачі
-Прошивка для Raspberry Pi Zero 2 W для оптичної навігації мультикоптерного дрона на базі ArduPilot (Matek H743-Slim V3).
+## Опис
+Прошивка для Raspberry Pi Zero 2 W для оптичної навігації дрона на базі ArduPilot.
 
-## Апаратне забезпечення
-- Raspberry Pi Zero 2 W, Matek H743-Slim V3 (ArduCopter 4.5.7)
-- MATEK 3901-L0X (Optical Flow + VL53L0X), Benewake TF-Luna LiDAR
+## Обладнання
+- Pi Zero 2 W, Matek H743-Slim V3, MATEK 3901-L0X, TF-Luna LiDAR
 - Caddx Thermal 256 / Pi Camera, EasyCap USB Capture
 
 ---
 
-## Що реалізовано
+## Реліз-ноти
 
-### v2.1.1 (28.02.2026) — Bug Fix + C++ + Installer
-- **Bug fix**: Smart RTL null reference crash при перемиканні під час симуляції
-- **Колір дрона**: #D3D3D3 (LightGray)
-- **C++ v2.1**: optical_flow.cpp, lidar.cpp, smart_rtl.hpp — повна підтримка сенсорів
-- **Unified Installer**: `/app/scripts/install.sh` — один скрипт для встановлення всього
-- **Документація оновлена**: повні інструкції Pi Zero 2W, реальні фото (Pi pinout, H743-Slim, 3901-L0X, TF-Luna)
-- Тестування: 100% (21/21 backend, 24/24 frontend)
+### v2.2 (28.02.2026) — Full Feature Release
+- **Settings page**: конфігурація камери, MAVLink, сенсорів, Smart RTL через UI
+- **Video stream**: плейсхолдер в Телеметрії (MJPEG на Pi)
+- **WebSocket**: `/ws/telemetry` для real-time оновлень
+- **Route export**: JSON + KML (Google Earth) з кнопками в Історії
+- **Mobile responsive**: компактні таби, scrollable nav, touch targets
+- **SITL документація**: повний гайд по тестуванню в симуляторі
+- Тести: 100% (29 backend, 32 frontend)
 
-### v2.1 — Smart RTL Simulation + UI
-- Smart RTL симуляція з фазами (RECORD→HIGH_ALT→DESCENT→LOW_ALT→LANDING)
-- Повзунок швидкості (x0.1—x5.0), HUD overlay (висота, швидкість, фаза, прогрес)
+### v2.1.1 — Bug Fix + C++ + Installer
+- Fix: Smart RTL null crash, колір дрона #D3D3D3
+- C++ v2.1 з сенсорами, Unified Installer
+
+### v2.1 — Smart RTL Simulation
+- Симуляція фаз, повзунок швидкості, HUD overlay
 
 ### v2.0 — Sensors + Telemetry
-- Модулі сенсорів: MATEK 3901-L0X, TF-Luna LiDAR
-- Smart RTL логіка, панель телеметрії, API endpoints
+- MATEK 3901-L0X, TF-Luna, Smart RTL, телеметрія
 
 ### v1.0 — Foundation
-- FastAPI backend + React + MongoDB, 3D візуалізація, CRUD маршрутів
+- FastAPI + React + MongoDB, 3D карта, документація
 
 ---
 
-## Backlog
+## Тестування
+- Backend: **29/29 (100%)**
+- Frontend: **32/32 (100%)**
+- Iterations: 10
 
-### P1
-- [ ] Інтеграція відеострім в Телеметрію
-- [ ] Сторінка налаштувань (конфігурація через UI)
-- [ ] WebSocket для real-time позиції
-
-### P2
-- [ ] Експорт маршрутів (JSON/KML)
-- [ ] Мобільний інтерфейс
-- [ ] SITL тестування
+## Backlog (все реалізовано)
+- [x] Sensors (MATEK 3901-L0X, TF-Luna)
+- [x] Smart RTL logic + simulation
+- [x] Telemetry dashboard
+- [x] Video stream integration
+- [x] Settings page
+- [x] WebSocket real-time
+- [x] Route export (JSON/KML)
+- [x] Mobile responsive
+- [x] SITL documentation
+- [x] C++ update
+- [x] Unified installer
