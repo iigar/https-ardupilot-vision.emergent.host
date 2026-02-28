@@ -135,15 +135,16 @@ test.describe('Visual Homing - Core Flows', () => {
     await expect(historySection).toContainText('Історія маршрутів');
     await expect(historySection).toContainText('Збережені записи польотів');
     
-    // Either route-history list or empty state should be visible
-    const hasRoutes = await page.getByTestId('route-history').isVisible().catch(() => false);
-    if (hasRoutes) {
-      // Check that route-history container is visible with routes
-      await expect(page.getByTestId('route-history')).toBeVisible();
-    } else {
-      // Check empty state message only if no routes
-      await expect(historySection).toContainText('Немає збережених маршрутів');
-    }
+    // Wait for content to load, then check if routes exist or show empty state
+    await page.waitForLoadState('networkidle');
+    
+    // Either route-history list or empty state message should be visible
+    const routeHistoryList = page.getByTestId('route-history');
+    const emptyStateVisible = await historySection.locator('text=Немає збережених маршрутів').isVisible().catch(() => false);
+    const routesVisible = await routeHistoryList.isVisible().catch(() => false);
+    
+    // One of them should be true
+    expect(emptyStateVisible || routesVisible).toBe(true);
   });
 
   test('Telemetry tab displays sensor monitoring dashboard', async ({ page }) => {
