@@ -343,7 +343,7 @@ class SystemSettings(BaseModel):
     web_port: int = 5000
     autostart: bool = True
     stream_enabled: bool = True
-    stream_url: str = "http://192.168.213.234:5000/video_feed"
+    stream_url: str = "http://192.168.213.234:5000/"
 
 @api_router.get("/settings")
 async def get_settings():
@@ -434,7 +434,7 @@ async def export_route_kml(route_id: str):
 async def stream_status():
     """Check video stream availability and return configured URL"""
     doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
-    stream_url = doc.get("stream_url", "http://192.168.213.234:5000/video_feed") if doc else "http://192.168.213.234:5000/video_feed"
+    stream_url = doc.get("stream_url", "http://192.168.213.234:5000/") if doc else "http://192.168.213.234:5000/"
     stream_enabled = doc.get("stream_enabled", True) if doc else True
     return {
         "available": stream_enabled,
