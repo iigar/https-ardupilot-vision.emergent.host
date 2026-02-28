@@ -1008,20 +1008,18 @@ function App() {
       
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl" data-testid="header">
-        <div className="max-w-[1800px] mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[1800px] mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-              <Plane size={20} className="text-cyan-400" />
+          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+            <div className="p-1.5 md:p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+              <Plane size={18} className="text-cyan-400" />
             </div>
-            <div>
-              <h1 className="font-heading font-bold text-lg text-white">Visual Homing</h1>
-            </div>
-            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-zinc-400">v2.2</span>
+            <h1 className="font-heading font-bold text-base md:text-lg text-white hidden sm:block">Visual Homing</h1>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-zinc-800 text-zinc-400 hidden sm:block">v2.2</span>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex items-center gap-2">
+          {/* Navigation - scrollable on mobile */}
+          <nav className="flex items-center gap-1 md:gap-2 overflow-x-auto scrollbar-hide ml-2 md:ml-4" data-testid="nav-tabs">
             <TabButton 
               active={activeTab === 'map'} 
               icon={Map} 
