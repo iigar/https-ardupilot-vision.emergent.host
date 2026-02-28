@@ -120,6 +120,10 @@ sudo nano /boot/firmware/config.txt
 enable_uart=1
 dtoverlay=disable-bt
 
+# Додаткові UART для сенсорів (MATEK 3901-L0X та TF-Luna)
+dtoverlay=uart2
+dtoverlay=uart3
+
 # Оптимізація для камери
 gpu_mem=128
 ```
@@ -215,3 +219,52 @@ sudo reboot
 ```
 
 Після перезавантаження система готова до встановлення Visual Homing.
+
+## 10. Перевірка сенсорів
+
+### Тест MATEK 3901-L0X (Optical Flow)
+
+```bash
+# Перевірити UART для 3901-L0X
+ls -la /dev/serial1
+
+# Тест зчитування даних
+python3 -c "
+import serial, time
+try:
+    ser = serial.Serial('/dev/serial1', 115200, timeout=2)
+    time.sleep(0.5)
+    data = ser.read(64)
+    print(f'Received {len(data)} bytes from MATEK 3901-L0X')
+    if len(data) > 0:
+        print('Sensor is responding!')
+    ser.close()
+except Exception as e:
+    print(f'Error: {e}')
+"
+```
+
+### Тест TF-Luna LiDAR
+
+```bash
+# Перевірити UART для TF-Luna
+ls -la /dev/serial2
+
+# Тест зчитування відстані
+python3 -c "
+import serial, time
+try:
+    ser = serial.Serial('/dev/serial2', 115200, timeout=2)
+    time.sleep(0.5)
+    data = ser.read(18)
+    if len(data) >= 9 and data[0] == 0x59 and data[1] == 0x59:
+        dist = data[2] | (data[3] << 8)
+        strength = data[4] | (data[5] << 8)
+        print(f'TF-Luna: distance={dist}cm ({dist/100:.2f}m), signal={strength}')
+    else:
+        print('No valid TF-Luna data received')
+    ser.close()
+except Exception as e:
+    print(f'Error: {e}')
+"
+```
