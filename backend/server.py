@@ -432,11 +432,13 @@ async def export_route_kml(route_id: str):
 # ===== Video Stream =====
 @api_router.get("/stream/status")
 async def stream_status():
-    """Check video stream availability"""
+    """Check video stream availability and return configured URL"""
+    doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
+    stream_url = doc.get("stream_url", "http://192.168.213.234:5000/video_feed") if doc else "http://192.168.213.234:5000/video_feed"
+    stream_enabled = doc.get("stream_enabled", True) if doc else True
     return {
-        "available": False,
-        "message": "Camera stream available only on Raspberry Pi",
-        "url": "/api/stream/video",
+        "available": stream_enabled,
+        "url": stream_url,
         "type": "mjpeg"
     }
 
