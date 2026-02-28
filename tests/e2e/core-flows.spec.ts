@@ -17,8 +17,8 @@ test.describe('Visual Homing - Core Flows', () => {
     const h1 = page.locator('h1');
     await expect(h1).toContainText('Visual Homing');
     
-    // Check version badge - updated selector for new design
-    const versionBadge = page.locator('span:has-text("v1.0")');
+    // Check version badge - updated to v2.0
+    const versionBadge = page.locator('span:has-text("v2.0")');
     await expect(versionBadge).toBeVisible();
     
     // Check footer
