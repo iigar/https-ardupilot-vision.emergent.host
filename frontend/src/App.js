@@ -705,6 +705,7 @@ const SettingsPage = () => {
         </SettingRow>
         <SettingRow label="FPS"><Input value={settings.camera_fps} onChange={(v) => update('camera_fps', v)} type="number" className="w-20" /></SettingRow>
         <SettingRow label="Стрім"><Toggle checked={settings.stream_enabled} onChange={(v) => update('stream_enabled', v)} /></SettingRow>
+        <SettingRow label="URL стріму"><Input value={settings.stream_url} onChange={(v) => update('stream_url', v)} className="w-64" /></SettingRow>
 
         {/* MAVLink */}
         <SectionTitle>MAVLink</SectionTitle>
