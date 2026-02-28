@@ -178,6 +178,22 @@ const RouteHistory = ({ routes, onSelect, onDelete, loading }) => {
             </div>
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
+                onClick={(e) => { e.stopPropagation(); window.open(`${API}/routes/${route.id}/export/json`, '_blank'); }}
+                className="p-2 rounded-lg hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                title="Експорт JSON"
+                data-testid={`export-json-${route.id}`}
+              >
+                <FileDown size={18} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); window.open(`${API}/routes/${route.id}/export/kml`, '_blank'); }}
+                className="p-2 rounded-lg hover:bg-amber-500/20 text-amber-400 transition-colors"
+                title="Експорт KML"
+                data-testid={`export-kml-${route.id}`}
+              >
+                <Download size={18} />
+              </button>
+              <button 
                 onClick={() => onSelect(route)}
                 className="p-2 rounded-lg hover:bg-cyan-500/20 text-cyan-400 transition-colors"
                 title="Переглянути"
