@@ -356,6 +356,8 @@ const AboutSection = () => (
             { icon: '🧭', title: 'Без компаса', desc: 'Орієнтація визначається візуально, немає магнітних інтерференцій' },
             { icon: '🔄', title: 'Teach & Repeat', desc: 'Запис маршруту під час польоту, повернення по записаному шляху' },
             { icon: '🌡️', title: 'Термальна камера', desc: 'Підтримка Caddx Thermal 256 для нічного бачення' },
+            { icon: '🔁', title: 'Smart RTL', desc: 'Гібридна навігація: IMU/Baro >50м + Optical Flow + Visual <50м' },
+            { icon: '📡', title: 'Optical Flow', desc: 'MATEK 3901-L0X для точної навігації на малій висоті' },
           ].map((feature, idx) => (
             <AnimatedCard key={feature.title} delay={idx * 100} className="p-5 hover:-translate-y-1">
               <span className="text-3xl mb-3 block">{feature.icon}</span>
@@ -372,9 +374,12 @@ const AboutSection = () => (
             {[
               ['Комп\'ютер', 'Raspberry Pi Zero 2 W'],
               ['Камера', 'Caddx Thermal 256 / Pi Camera'],
-              ['Політний контролер', 'Matek (ArduCopter 4.5.7)'],
-              ['Протокол', 'MAVLink 2 (UART 115200)'],
+              ['Політний контролер', 'Matek H743-Slim V3 (ArduCopter 4.5.7)'],
+              ['Optical Flow', 'MATEK 3901-L0X (PMW3901 + VL53L0X)'],
+              ['LiDAR', 'Benewake TF-Luna (0.2-8m)'],
+              ['Протокол', 'MAVLink 2 / MSP V2 (UART)'],
               ['Мови', 'Python 3 / C++17'],
+              ['Макс. політ', '5км на 200м (Smart RTL)'],
             ].map(([label, value]) => (
               <div key={label} className="flex justify-between items-center py-2 border-b border-zinc-800 last:border-0">
                 <span className="text-zinc-500">{label}</span>
