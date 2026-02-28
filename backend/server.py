@@ -155,9 +155,32 @@ class DronePosition(BaseModel):
     speed: float = 0.0
     mode: str = "IDLE"
 
+
+class SensorStatus(BaseModel):
+    optical_flow_connected: bool = False
+    optical_flow_quality: int = 0
+    flow_x: float = 0.0
+    flow_y: float = 0.0
+    lidar_connected: bool = False
+    lidar_distance_m: float = 0.0
+    lidar_signal: int = 0
+
+
+class SmartRTLStatus(BaseModel):
+    active: bool = False
+    phase: str = "idle"
+    current_altitude: float = 0.0
+    home_distance: float = 0.0
+    return_progress: float = 0.0
+    nav_source: str = "none"
+    target_altitude: float = 0.0
+
+
 # In-memory storage for demo (in real system - from Pi via WebSocket)
 _demo_routes = {}
 _current_position = DronePosition(x=0, y=0, z=5, yaw=0, mode="IDLE")
+_sensor_status = SensorStatus()
+_smart_rtl_status = SmartRTLStatus()
 
 @api_router.get("/routes")
 async def list_routes():
@@ -250,6 +273,47 @@ async def update_drone_position(pos: DronePosition):
 async def start_simulation(route_id: str):
     """Start route simulation for demo"""
     return {"message": "Simulation would start here", "route_id": route_id}
+
+
+# Sensor status endpoints
+@api_router.get("/sensors/status")
+async def get_sensor_status():
+    """Get current sensor status"""
+    return _sensor_status
+
+@api_router.post("/sensors/status")
+async def update_sensor_status(status: SensorStatus):
+    """Update sensor status (from Pi)"""
+    global _sensor_status
+    _sensor_status = status
+    return {"success": True}
+
+@api_router.get("/smart-rtl/status")
+async def get_smart_rtl_status():
+    """Get Smart RTL status"""
+    return _smart_rtl_status
+
+@api_router.post("/smart-rtl/status")
+async def update_smart_rtl_status(status: SmartRTLStatus):
+    """Update Smart RTL status (from Pi)"""
+    global _smart_rtl_status
+    _smart_rtl_status = status
+    return {"success": True}
+
+@api_router.get("/smart-rtl/config")
+async def get_smart_rtl_config():
+    """Get Smart RTL configuration defaults"""
+    return {
+        "high_alt_threshold": 50.0,
+        "precision_land_alt": 5.0,
+        "descent_start_pct": 0.5,
+        "descent_rate": 2.0,
+        "high_alt_speed": 10.0,
+        "low_alt_speed": 3.0,
+        "precision_speed": 0.5,
+        "flow_min_quality": 50,
+        "visual_min_confidence": 0.3
+    }
 
 
 # Status endpoints (original)
