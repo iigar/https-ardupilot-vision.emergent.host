@@ -3,98 +3,64 @@
 ## Дата оновлення: 28.02.2026
 
 ## Оригінальна постановка задачі
-Створення прошивки для Raspberry Pi Zero 2 W для використання нічної камери як оптичної стабілізації/навігації для мультикоптерного дрона на базі ArduPilot.
+Створення прошивки для Raspberry Pi Zero 2 W для використання нічної камери як оптичної навігації для мультикоптерного дрона на базі ArduPilot (Matek H743-Slim V3).
 
-## Уточнені вимоги
-- **Принцип роботи**: Visual Homing - запис візуальних орієнтирів під час польоту та повернення по них
-- **Камера**: Caddx Thermal 256 (аналогова) + Pi Camera
-- **Політний контролер**: Matek H743-Slim V3 з ArduCopter 4.5.7
-- **Підключення**: UART (MAVLink) + MSP (сенсори)
-- **Компас**: Без компаса (візуальна орієнтація)
-- **GPS**: З можливістю вимкнення
-- **Сенсори**: MATEK 3901-L0X (Optical Flow), TF-Luna (LiDAR)
-- **Smart RTL**: Гібридна навігація (IMU/Baro >50м + Optical Flow <50м)
-- **Запуск**: Автозапуск + SSH
+## Апаратне забезпечення
+- Raspberry Pi Zero 2 W
+- Matek H743-Slim V3 (ArduCopter 4.5.7)
+- MATEK 3901-L0X (Optical Flow + VL53L0X)
+- Benewake TF-Luna LiDAR (0.2-8m)
+- Caddx Thermal 256 / Pi Camera
+- EasyCap USB Capture (для аналогової камери)
 
 ---
 
 ## Що реалізовано
 
-### Iteration 5-6 (28.02.2026) — Sensors + Smart RTL + Telemetry
-- MATEK 3901-L0X (Optical Flow) модуль: `sensors/optical_flow.py`
-- TF-Luna LiDAR модуль: `sensors/lidar.py`
-- Smart RTL логіка: `navigation/smart_rtl.py`
-- Оновлена конфігурація: `config.py` (OpticalFlowConfig, LidarConfig, SmartRTLConfig)
-- ArduPilot параметри для нових сенсорів: `visual_homing.param`
-- Панель телеметрії з моніторингом сенсорів та Smart RTL
-- API endpoints: `/api/sensors/status`, `/api/smart-rtl/status`, `/api/smart-rtl/config`
-- Покращена 3D модель дрона (квадрокоптер з пропелерами, камерою, GPS)
-- Оновлена документація з пінаутами (Pi Zero 2 W, H743-Slim V3, 3901-L0X, TF-Luna)
-- Версія UI: v2.0
+### v2.1 (28.02.2026) — Smart RTL Simulation + UI Improvements
+- Smart RTL симуляція в 3D карті з фазами (RECORD→HIGH_ALT→DESCENT→LOW_ALT→LANDING)
+- Повзунок швидкості (x0.1 — x5.0) для контролю симуляції
+- HUD overlay: висота, швидкість, фаза, прогрес
+- Кнопка "Smart RTL" з кольоровою індикацією фаз
+- Світло-сірий дрон (видимий на темному фоні)
+- Реальні фото пристроїв в документації (H743-Slim V3, 3901-L0X, TF-Luna)
+- Стилізація зображень в документації (prose-img)
+- Тестування: 100% (21/21 backend, 24/24 frontend)
 
-### Iteration 3-4 (24.02.2026) — UI Redesign + MongoDB
-- Modern Dark дизайн з glassmorphism та анімаціями
-- Історія маршрутів — збереження в MongoDB
-- 3D візуалізація маршруту (Three.js)
-- DELETE endpoint для видалення маршрутів
-- Auto-save toggle
+### v2.0 (28.02.2026) — Sensors + Smart RTL + Telemetry
+- Модулі сенсорів: MATEK 3901-L0X, TF-Luna LiDAR
+- Smart RTL логіка (firmware/python/navigation/smart_rtl.py)
+- Панель телеметрії з моніторингом сенсорів
+- API endpoints для сенсорів та Smart RTL
+- Детальна 3D модель квадрокоптера
+- Оновлені ArduPilot параметри та документація
 
-### Iteration 1-2 — Foundation + Core Features
-- Python/C++ реалізація Visual Homing
+### v1.0 — Foundation + UI + DB
+- Flask→FastAPI backend з MongoDB
+- Modern Dark UI з glassmorphism
+- 3D візуалізація маршрутів (Three.js)
+- CRUD маршрутів
 - Документація (9 файлів)
-- Скрипти встановлення та автозапуску
-- Backend API для документації та прошивки
-- Симуляція польоту дрона
+- Python/C++ реалізація Visual Homing
+- Автозапуск на Pi
 
 ---
 
-## API Endpoints
-
-| Method | Endpoint | Опис |
-|--------|----------|------|
-| GET | `/api/routes` | Список збережених маршрутів |
-| POST | `/api/routes` | Зберегти маршрут |
-| DELETE | `/api/routes/{id}` | Видалити маршрут |
-| GET | `/api/routes/demo/generate` | Генерувати демо-маршрут (MOCK) |
-| GET | `/api/docs/list` | Список документів |
-| GET | `/api/docs/{filename}` | Вміст документа |
-| GET | `/api/firmware/structure` | Структура прошивки |
-| GET | `/api/sensors/status` | Статус сенсорів |
-| POST | `/api/sensors/status` | Оновити статус сенсорів |
-| GET | `/api/smart-rtl/status` | Статус Smart RTL |
-| POST | `/api/smart-rtl/status` | Оновити статус Smart RTL |
-| GET | `/api/smart-rtl/config` | Конфігурація Smart RTL |
-
----
-
-## Тестування (28.02.2026)
-- Backend: **100% (21/21 тестів)**
-- Frontend E2E: **100% (19/19 тестів)**
-
-### Тестові файли
-- `/app/backend/tests/test_api.py`
-- `/app/tests/e2e/core-flows.spec.ts`
-- `/app/tests/e2e/map-simulation.spec.ts`
-- `/app/tests/e2e/route-history.spec.ts`
+## Тестування (актуальне)
+- Backend: **100% (21/21)**
+- Frontend E2E: **100% (24/24)**
+- Файли: `/app/test_reports/iteration_7.json`
 
 ---
 
 ## Backlog
 
-### P1 — Наступні кроки
-- [ ] Інтеграція відеострім з камери в веб-інтерфейс
-- [ ] Сторінка налаштувань (конфігурація параметрів через UI)
-- [ ] WebSocket для real-time позиції дрона
+### P1
+- [ ] Інтеграція відеострім в Телеметрію
+- [ ] Сторінка налаштувань (конфігурація через UI)
+- [ ] WebSocket для real-time позиції
 
-### P2 — Покращення
+### P2
 - [ ] Експорт маршрутів (JSON/KML)
 - [ ] Мобільний інтерфейс
 - [ ] SITL тестування
-
----
-
-## Примітки
-- API `/api/routes/demo/generate` повертає **MOCK** дані
-- 3D компонент використовує чистий Three.js
-- Збереження маршрутів можна вимкнути через toggle в UI
-- Сенсори показують OFFLINE в превʼю (реальні дані тільки з Pi)
