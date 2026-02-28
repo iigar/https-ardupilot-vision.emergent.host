@@ -765,8 +765,11 @@ const TelemetryDashboard = () => {
         </button>
       </div>
 
-      {/* Sensor Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Video + Sensor Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Video Stream */}
+        <VideoStream />
+
         {/* Optical Flow */}
         <SensorCard
           title="MATEK 3901-L0X"
