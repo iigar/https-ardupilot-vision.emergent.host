@@ -147,7 +147,7 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
     // Central body - X-frame center plate
     const bodyGeo = new THREE.BoxGeometry(1.8, 0.2, 1.8);
     const bodyMat = new THREE.MeshStandardMaterial({ 
-      color: 0xb8c0cc, 
+      color: 0xD3D3D3, 
       metalness: 0.7, 
       roughness: 0.25 
     });
@@ -156,14 +156,14 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
 
     // Top plate (FC mount)
     const topPlateGeo = new THREE.BoxGeometry(1.2, 0.08, 1.2);
-    const topPlateMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.8, roughness: 0.2 });
+    const topPlateMat = new THREE.MeshStandardMaterial({ color: 0xC0C0C0, metalness: 0.8, roughness: 0.2 });
     const topPlate = new THREE.Mesh(topPlateGeo, topPlateMat);
     topPlate.position.y = 0.25;
     droneGroup.add(topPlate);
 
     // Battery on top
     const battGeo = new THREE.BoxGeometry(0.8, 0.25, 0.4);
-    const battMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, metalness: 0.5, roughness: 0.4 });
+    const battMat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.5, roughness: 0.4 });
     const battery = new THREE.Mesh(battGeo, battMat);
     battery.position.y = 0.45;
     droneGroup.add(battery);
@@ -197,7 +197,7 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
       // Arm tube
       const armLen = Math.sqrt(pos[0]*pos[0] + pos[2]*pos[2]) * 0.45;
       const armGeo = new THREE.CylinderGeometry(0.08, 0.08, armLen);
-      const armMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.8, roughness: 0.3 });
+      const armMat = new THREE.MeshStandardMaterial({ color: 0xD3D3D3, metalness: 0.8, roughness: 0.3 });
       const arm = new THREE.Mesh(armGeo, armMat);
       const angle = Math.atan2(pos[2], pos[0]);
       arm.rotation.z = Math.PI / 2;
@@ -208,7 +208,7 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
       // Motor housing (cylinder)
       const motorGeo = new THREE.CylinderGeometry(0.22, 0.25, 0.25, 16);
       const motorMat = new THREE.MeshStandardMaterial({ 
-        color: 0x8b95a5, metalness: 0.9, roughness: 0.1 
+        color: 0xBBBBBB, metalness: 0.9, roughness: 0.1 
       });
       const motor = new THREE.Mesh(motorGeo, motorMat);
       motor.position.set(pos[0], 0.15, pos[2]);
@@ -249,14 +249,14 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
 
       // Landing leg
       const legGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.6);
-      const legMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.6, roughness: 0.4 });
+      const legMat = new THREE.MeshStandardMaterial({ color: 0xD3D3D3, metalness: 0.6, roughness: 0.4 });
       const leg = new THREE.Mesh(legGeo, legMat);
       leg.position.set(pos[0] * 0.7, -0.4, pos[2] * 0.7);
       droneGroup.add(leg);
 
       // Landing foot
       const footGeo = new THREE.BoxGeometry(0.3, 0.04, 0.06);
-      const footMat = new THREE.MeshStandardMaterial({ color: 0x8b95a5, metalness: 0.5 });
+      const footMat = new THREE.MeshStandardMaterial({ color: 0xBBBBBB, metalness: 0.5 });
       const foot = new THREE.Mesh(footGeo, footMat);
       foot.position.set(pos[0] * 0.7, -0.7, pos[2] * 0.7);
       droneGroup.add(foot);
@@ -264,13 +264,13 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
     
     // Camera/gimbal underneath
     const gimbalArmGeo = new THREE.BoxGeometry(0.08, 0.3, 0.08);
-    const gimbalArmMat = new THREE.MeshStandardMaterial({ color: 0x8b95a5, metalness: 0.7 });
+    const gimbalArmMat = new THREE.MeshStandardMaterial({ color: 0xBBBBBB, metalness: 0.7 });
     const gimbalArm = new THREE.Mesh(gimbalArmGeo, gimbalArmMat);
     gimbalArm.position.set(0, -0.25, -0.3);
     droneGroup.add(gimbalArm);
 
     const camBodyGeo = new THREE.BoxGeometry(0.35, 0.25, 0.3);
-    const camBodyMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, metalness: 0.8, roughness: 0.2 });
+    const camBodyMat = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.8, roughness: 0.2 });
     const camBody = new THREE.Mesh(camBodyGeo, camBodyMat);
     camBody.position.set(0, -0.45, -0.3);
     droneGroup.add(camBody);
