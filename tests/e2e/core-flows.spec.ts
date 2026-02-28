@@ -190,4 +190,90 @@ test.describe('Visual Homing - Core Flows', () => {
     await expect(phaseIndicators).toContainText('LOW ALT');
     await expect(phaseIndicators).toContainText('LANDING');
   });
+
+  test('Telemetry tab displays video stream placeholder (NEW v2.2)', async ({ page }) => {
+    // Navigate to Telemetry tab
+    await navigateToTab(page, 'tab-telemetry');
+    
+    // Check video stream component is visible
+    const videoStream = page.getByTestId('video-stream');
+    await expect(videoStream).toBeVisible({ timeout: 10000 });
+    
+    // Check video stream header
+    await expect(videoStream.locator('h3')).toContainText('Камера');
+    
+    // Check status badge (should be OFFLINE in preview environment)
+    await expect(videoStream).toContainText('OFFLINE');
+    
+    // Check placeholder message
+    await expect(videoStream).toContainText('Стрім доступний на Raspberry Pi');
+    await expect(videoStream).toContainText('/api/stream/video');
+  });
+
+  test('Settings tab renders correctly with all sections (NEW v2.2)', async ({ page }) => {
+    // Navigate to Settings tab
+    await navigateToTab(page, 'tab-settings');
+    
+    // Verify settings section is visible
+    const settingsSection = page.getByTestId('settings-section');
+    await expect(settingsSection).toBeVisible();
+    
+    // Check header text
+    await expect(settingsSection).toContainText('Налаштування');
+    await expect(settingsSection).toContainText('Конфігурація системи Visual Homing');
+    
+    // Check Save and Reset buttons
+    await expect(page.getByTestId('settings-save-btn')).toBeVisible();
+    await expect(page.getByTestId('settings-reset-btn')).toBeVisible();
+    
+    // Check Camera section
+    await expect(settingsSection).toContainText('Камера');
+    await expect(settingsSection).toContainText('Тип камери');
+    await expect(settingsSection).toContainText('Роздільність');
+    await expect(settingsSection).toContainText('FPS');
+    
+    // Check MAVLink section
+    await expect(settingsSection).toContainText('MAVLink');
+    await expect(settingsSection).toContainText('Baud Rate');
+    
+    // Check Optical Flow section
+    await expect(settingsSection).toContainText('Optical Flow');
+    await expect(settingsSection).toContainText('MATEK 3901-L0X');
+    
+    // Check LiDAR section
+    await expect(settingsSection).toContainText('LiDAR');
+    await expect(settingsSection).toContainText('TF-Luna');
+    
+    // Check Smart RTL section
+    await expect(settingsSection).toContainText('Smart RTL');
+    await expect(settingsSection).toContainText('Поріг висоти');
+    await expect(settingsSection).toContainText('Точна посадка');
+    
+    // Check System section
+    await expect(settingsSection).toContainText('Система');
+    await expect(settingsSection).toContainText('Автозапуск');
+    await expect(settingsSection).toContainText('Web порт');
+  });
+
+  test('Settings can be saved and reset (NEW v2.2)', async ({ page }) => {
+    // Navigate to Settings tab
+    await navigateToTab(page, 'tab-settings');
+    
+    const settingsSection = page.getByTestId('settings-section');
+    await expect(settingsSection).toBeVisible();
+    
+    // Click Reset button
+    const resetBtn = page.getByTestId('settings-reset-btn');
+    await resetBtn.click({ force: true });
+    
+    // Wait for toast notification
+    await expect(page.locator('[data-sonner-toast]')).toContainText('скинуто', { timeout: 5000 });
+    
+    // Click Save button  
+    const saveBtn = page.getByTestId('settings-save-btn');
+    await saveBtn.click({ force: true });
+    
+    // Wait for save toast
+    await expect(page.locator('[data-sonner-toast]')).toContainText('збережено', { timeout: 5000 });
+  });
 });
