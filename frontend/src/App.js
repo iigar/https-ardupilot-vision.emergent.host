@@ -1048,6 +1048,13 @@ function App() {
               onClick={() => setActiveTab('about')}
               testId="tab-about"
             />
+            <TabButton 
+              active={activeTab === 'settings'} 
+              icon={Settings} 
+              label="Налаштування" 
+              onClick={() => setActiveTab('settings')}
+              testId="tab-settings"
+            />
           </nav>
         </div>
       </header>
