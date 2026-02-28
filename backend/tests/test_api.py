@@ -369,12 +369,12 @@ class TestDocumentationUpdated:
     """Test updated documentation with 9 documents"""
     
     def test_docs_list_count(self, api_client):
-        """Test GET /api/docs/list returns 9 documents"""
+        """Test GET /api/docs/list returns 10 documents"""
         response = api_client.get(f"{BASE_URL}/api/docs/list")
         assert response.status_code == 200
         data = response.json()
         
-        assert len(data) == 9, f"Expected 9 documents, got {len(data)}"
+        assert len(data) == 10, f"Expected 10 documents, got {len(data)}"
         
         # Verify expected documents exist
         doc_names = [d["name"] for d in data]
@@ -383,7 +383,8 @@ class TestDocumentationUpdated:
             "02_wiring_diagrams.md",
             "03_ardupilot_config.md",
             "04_python_implementation.md",
-            "08_testing.md"
+            "08_testing.md",
+            "09_sitl_testing.md"
         ]
         for expected in expected_docs:
             assert expected in doc_names, f"Missing document: {expected}"
