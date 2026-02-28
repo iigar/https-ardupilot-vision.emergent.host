@@ -1,0 +1,109 @@
+{
+  "summary": "Update mode testing complete. Tested new sensor and Smart RTL API endpoints, verified existing endpoints still work. Updated frontend tests to verify new specs (MATEK 3901-L0X, TF-Luna, Smart RTL) in About section. All 21 backend tests passed (15 existing + 6 new), all 18 frontend tests passed.",
+  "mode": "update",
+  "baseline_commit": "1d8666ed7fda522f44c3733021ee5bc8585b8145",
+  "head_commit": "1e025cb1e596926efe14cb9cd300e165e818d4f9",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 3,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": ["/app/tests/e2e/core-flows.spec.ts", "/app/backend/tests/test_api.py"],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_api.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/tests/e2e/core-flows.spec.ts",
+    "/app/tests/e2e/map-simulation.spec.ts",
+    "/app/tests/e2e/route-history.spec.ts"
+  ],
+  "action_items": [],
+  "updated_files": [
+    "/app/tests/e2e/core-flows.spec.ts",
+    "/app/backend/tests/test_api.py"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21)",
+    "frontend": "100% (18/18)"
+  },
+  "seed_data_creation": "Test routes created dynamically with TEST_ prefix, cleaned up after each test",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new sensor and Smart RTL endpoints tested and working. Frontend specs updated to verify MATEK 3901-L0X, TF-Luna, and Smart RTL specs in About section. Documentation list shows 9 documents as expected. 3D drone model renders correctly.",
+  "tests_summary": {
+    "new_backend_tests": [
+      "test_get_sensor_status - GET /api/sensors/status returns optical flow + LiDAR data",
+      "test_post_sensor_status - POST /api/sensors/status updates sensor data",
+      "test_get_smart_rtl_status - GET /api/smart-rtl/status returns RTL status",
+      "test_post_smart_rtl_status - POST /api/smart-rtl/status updates RTL status",
+      "test_get_smart_rtl_config - GET /api/smart-rtl/config returns hybrid nav config",
+      "test_docs_list_count - Docs list returns 9 documents"
+    ],
+    "existing_backend_tests_passed": [
+      "test_root_endpoint",
+      "test_docs_list_returns_array",
+      "test_docs_list_has_required_fields",
+      "test_get_single_doc",
+      "test_demo_route_generate",
+      "test_demo_route_has_points",
+      "test_demo_route_has_keyframes",
+      "test_demo_route_total_distance",
+      "test_routes_list",
+      "test_create_and_delete_route",
+      "test_delete_nonexistent_route",
+      "test_get_position",
+      "test_post_position",
+      "test_start_simulation",
+      "test_firmware_structure"
+    ],
+    "frontend_tests": {
+      "core-flows.spec.ts": [
+        "App loads with header and navigation",
+        "Navigation tabs visible and 3D Map active by default",
+        "Tab navigation switches between views",
+        "About section displays project info with new specs (MATEK 3901-L0X, TF-Luna, Smart RTL)",
+        "Documentation tab displays 9 documents",
+        "Route History tab displays correctly"
+      ],
+      "map-simulation.spec.ts": [
+        "3D Map container and canvas render",
+        "Simulation buttons visible and functional",
+        "Start/Stop simulation button works",
+        "Reset button works",
+        "New route button loads new route",
+        "Map stats display keyframes and distance",
+        "Auto-save toggle is visible and functional"
+      ],
+      "route-history.spec.ts": [
+        "API: List routes endpoint returns array",
+        "API: Save and delete route via API",
+        "UI: Enable auto-save and save route",
+        "UI: Route History page displays saved routes",
+        "UI: Delete route from history"
+      ]
+    }
+  },
+  "new_endpoints_tested": {
+    "sensors": {
+      "GET /api/sensors/status": "Returns optical_flow_connected, optical_flow_quality, flow_x, flow_y, lidar_connected, lidar_distance_m, lidar_signal",
+      "POST /api/sensors/status": "Updates sensor status from Raspberry Pi"
+    },
+    "smart_rtl": {
+      "GET /api/smart-rtl/status": "Returns active, phase, current_altitude, home_distance, return_progress, nav_source, target_altitude",
+      "POST /api/smart-rtl/status": "Updates Smart RTL status from Pi",
+      "GET /api/smart-rtl/config": "Returns config: high_alt_threshold=50m, precision_land_alt, flow_min_quality, visual_min_confidence"
+    }
+  },
+  "mocked_api_note": "/api/routes/demo/generate returns static demo route data (not real flight data) - as expected per requirements"
+}
