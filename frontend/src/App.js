@@ -544,6 +544,174 @@ const PhaseIndicator = ({ phase, active }) => {
   );
 };
 
+// Video Stream Component
+const VideoStream = () => {
+  const [streamStatus, setStreamStatus] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/stream/status`).then(r => setStreamStatus(r.data)).catch(() => {});
+  }, []);
+
+  return (
+    <AnimatedCard className="p-5 overflow-hidden" data-testid="video-stream">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg border bg-zinc-800 border-zinc-700">
+            <Video size={20} className="text-zinc-400" />
+          </div>
+          <h3 className="font-heading font-bold text-white">Камера</h3>
+        </div>
+        <span className={`text-xs font-mono px-2 py-1 rounded-full ${streamStatus?.available ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+          {streamStatus?.available ? 'LIVE' : 'OFFLINE'}
+        </span>
+      </div>
+      <div className="aspect-video bg-zinc-900 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
+        {streamStatus?.available ? (
+          <img src={`${API}/stream/video`} alt="Camera Feed" className="w-full h-full object-cover" />
+        ) : (
+          <div className="text-center p-6">
+            <Video size={48} className="mx-auto text-zinc-700 mb-3" />
+            <p className="text-zinc-500 text-sm">Стрім доступний на Raspberry Pi</p>
+            <p className="text-zinc-600 text-xs mt-1 font-mono">{streamStatus?.url || '/api/stream/video'}</p>
+          </div>
+        )}
+      </div>
+    </AnimatedCard>
+  );
+};
+
+// Settings Page Component
+const SettingsPage = () => {
+  const [settings, setSettings] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get(`${API}/settings`).then(r => { setSettings(r.data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axios.post(`${API}/settings`, settings);
+      toast.success("Налаштування збережено!");
+    } catch (e) {
+      toast.error("Помилка збереження");
+    }
+    setSaving(false);
+  };
+
+  const handleReset = async () => {
+    try {
+      const r = await axios.post(`${API}/settings/reset`);
+      setSettings(r.data);
+      toast.success("Налаштування скинуто!");
+    } catch (e) {
+      toast.error("Помилка скидання");
+    }
+  };
+
+  const update = (key, val) => setSettings(prev => ({ ...prev, [key]: val }));
+
+  if (loading || !settings) return (
+    <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
+  );
+
+  const SectionTitle = ({ children }) => (
+    <h3 className="text-xs font-mono uppercase tracking-wider text-cyan-500 mb-3 mt-6 first:mt-0">{children}</h3>
+  );
+
+  const SettingRow = ({ label, children }) => (
+    <div className="flex items-center justify-between py-3 border-b border-zinc-800/50">
+      <span className="text-sm text-zinc-400">{label}</span>
+      <div className="flex items-center gap-2">{children}</div>
+    </div>
+  );
+
+  const Input = ({ value, onChange, type = "text", className = "w-40" }) => (
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
+      className={`bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-white font-mono 
+                  focus:border-cyan-500 focus:outline-none ${className}`}
+    />
+  );
+
+  const Toggle = ({ checked, onChange }) => (
+    <Switch checked={checked} onCheckedChange={onChange} className="data-[state=checked]:bg-cyan-500" />
+  );
+
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-8 animate-fade-in" data-testid="settings-section">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="font-heading font-bold text-2xl text-white">Налаштування</h2>
+          <p className="text-zinc-500 text-sm mt-1">Конфігурація системи Visual Homing</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={handleReset} className="px-4 py-2 rounded-lg text-sm bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white transition-colors" data-testid="settings-reset-btn">
+            <RotateCcw size={14} className="inline mr-1" /> Скинути
+          </button>
+          <button onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-colors disabled:opacity-50" data-testid="settings-save-btn">
+            <Save size={14} className="inline mr-1" /> {saving ? 'Збереження...' : 'Зберегти'}
+          </button>
+        </div>
+      </div>
+
+      <GlassPanel className="p-6">
+        {/* Camera */}
+        <SectionTitle>Камера</SectionTitle>
+        <SettingRow label="Тип камери">
+          <select value={settings.camera_type} onChange={(e) => update('camera_type', e.target.value)}
+            className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-white font-mono focus:border-cyan-500 focus:outline-none">
+            <option value="usb_capture">USB Capture (EasyCap)</option>
+            <option value="pi_camera">Pi Camera (CSI)</option>
+          </select>
+        </SettingRow>
+        <SettingRow label="Пристрій"><Input value={settings.camera_device} onChange={(v) => update('camera_device', v)} /></SettingRow>
+        <SettingRow label="Роздільність">
+          <Input value={settings.camera_resolution_w} onChange={(v) => update('camera_resolution_w', v)} type="number" className="w-20" />
+          <span className="text-zinc-600">x</span>
+          <Input value={settings.camera_resolution_h} onChange={(v) => update('camera_resolution_h', v)} type="number" className="w-20" />
+        </SettingRow>
+        <SettingRow label="FPS"><Input value={settings.camera_fps} onChange={(v) => update('camera_fps', v)} type="number" className="w-20" /></SettingRow>
+        <SettingRow label="Стрім"><Toggle checked={settings.stream_enabled} onChange={(v) => update('stream_enabled', v)} /></SettingRow>
+
+        {/* MAVLink */}
+        <SectionTitle>MAVLink</SectionTitle>
+        <SettingRow label="Порт"><Input value={settings.mavlink_port} onChange={(v) => update('mavlink_port', v)} /></SettingRow>
+        <SettingRow label="Baud Rate"><Input value={settings.mavlink_baud} onChange={(v) => update('mavlink_baud', v)} type="number" className="w-28" /></SettingRow>
+
+        {/* Optical Flow */}
+        <SectionTitle>Optical Flow (MATEK 3901-L0X)</SectionTitle>
+        <SettingRow label="Увімкнено"><Toggle checked={settings.flow_enabled} onChange={(v) => update('flow_enabled', v)} /></SettingRow>
+        <SettingRow label="Порт"><Input value={settings.flow_port} onChange={(v) => update('flow_port', v)} /></SettingRow>
+        <SettingRow label="Мін. якість"><Input value={settings.flow_min_quality} onChange={(v) => update('flow_min_quality', v)} type="number" className="w-20" /></SettingRow>
+
+        {/* LiDAR */}
+        <SectionTitle>LiDAR (TF-Luna)</SectionTitle>
+        <SettingRow label="Увімкнено"><Toggle checked={settings.lidar_enabled} onChange={(v) => update('lidar_enabled', v)} /></SettingRow>
+        <SettingRow label="Порт"><Input value={settings.lidar_port} onChange={(v) => update('lidar_port', v)} /></SettingRow>
+
+        {/* Smart RTL */}
+        <SectionTitle>Smart RTL</SectionTitle>
+        <SettingRow label="Поріг висоти (м)"><Input value={settings.rtl_high_alt} onChange={(v) => update('rtl_high_alt', v)} type="number" className="w-24" /></SettingRow>
+        <SettingRow label="Точна посадка (м)"><Input value={settings.rtl_precision_alt} onChange={(v) => update('rtl_precision_alt', v)} type="number" className="w-24" /></SettingRow>
+        <SettingRow label="Початок зниження (%)"><Input value={(settings.rtl_descent_pct * 100).toFixed(0)} onChange={(v) => update('rtl_descent_pct', v / 100)} type="number" className="w-24" /></SettingRow>
+        <SettingRow label="Швидкість зниження (м/с)"><Input value={settings.rtl_descent_rate} onChange={(v) => update('rtl_descent_rate', v)} type="number" className="w-24" /></SettingRow>
+        <SettingRow label="Швидкість HIGH ALT (м/с)"><Input value={settings.rtl_high_speed} onChange={(v) => update('rtl_high_speed', v)} type="number" className="w-24" /></SettingRow>
+        <SettingRow label="Швидкість LOW ALT (м/с)"><Input value={settings.rtl_low_speed} onChange={(v) => update('rtl_low_speed', v)} type="number" className="w-24" /></SettingRow>
+
+        {/* System */}
+        <SectionTitle>Система</SectionTitle>
+        <SettingRow label="Автозапуск"><Toggle checked={settings.autostart} onChange={(v) => update('autostart', v)} /></SettingRow>
+        <SettingRow label="Web порт"><Input value={settings.web_port} onChange={(v) => update('web_port', v)} type="number" className="w-24" /></SettingRow>
+      </GlassPanel>
+    </div>
+  );
+};
+
 // Telemetry Dashboard Component
 const TelemetryDashboard = () => {
   const [sensors, setSensors] = useState(null);
