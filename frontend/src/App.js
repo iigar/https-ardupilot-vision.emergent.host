@@ -64,7 +64,8 @@ const DocViewer = ({ doc }) => {
                    prose-code:bg-zinc-800 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-cyan-400
                    prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800
                    prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline
-                   prose-strong:text-white prose-li:text-zinc-400"
+                   prose-strong:text-white prose-li:text-zinc-400
+                   prose-img:rounded-xl prose-img:border prose-img:border-zinc-700 prose-img:max-w-full prose-img:my-4"
         dangerouslySetInnerHTML={{ __html: doc.html }}
       />
     </div>
