@@ -135,77 +135,186 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating }) => {
 
     scene.add(homeGroup);
 
-    // Drone model - more detailed
+    // Drone model - detailed quadcopter
     const droneGroup = new THREE.Group();
     
-    // Central body - sleek design
-    const bodyGeo = new THREE.BoxGeometry(1.2, 0.3, 1.2);
+    // Central body - X-frame center plate
+    const bodyGeo = new THREE.BoxGeometry(1.8, 0.2, 1.8);
     const bodyMat = new THREE.MeshStandardMaterial({ 
-      color: 0x18181b, 
+      color: 0x1a1a2e, 
       metalness: 0.9, 
-      roughness: 0.2 
+      roughness: 0.15 
     });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     droneGroup.add(body);
 
-    // Arms and motors
-    const armPositions = [[0.8, 0, 0.8], [-0.8, 0, 0.8], [0.8, 0, -0.8], [-0.8, 0, -0.8]];
+    // Top plate (FC mount)
+    const topPlateGeo = new THREE.BoxGeometry(1.2, 0.08, 1.2);
+    const topPlateMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.2 });
+    const topPlate = new THREE.Mesh(topPlateGeo, topPlateMat);
+    topPlate.position.y = 0.25;
+    droneGroup.add(topPlate);
+
+    // Battery on top
+    const battGeo = new THREE.BoxGeometry(0.8, 0.25, 0.4);
+    const battMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5, roughness: 0.4 });
+    const battery = new THREE.Mesh(battGeo, battMat);
+    battery.position.y = 0.45;
+    droneGroup.add(battery);
+
+    // Front direction indicator (LED strip)
+    const frontLedGeo = new THREE.BoxGeometry(0.6, 0.06, 0.06);
+    const frontLedMat = new THREE.MeshStandardMaterial({ 
+      color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.8 
+    });
+    const frontLed = new THREE.Mesh(frontLedGeo, frontLedMat);
+    frontLed.position.set(0, 0.15, -0.95);
+    droneGroup.add(frontLed);
+
+    // Rear indicator (green)
+    const rearLedGeo = new THREE.BoxGeometry(0.6, 0.06, 0.06);
+    const rearLedMat = new THREE.MeshStandardMaterial({ 
+      color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.8 
+    });
+    const rearLed = new THREE.Mesh(rearLedGeo, rearLedMat);
+    rearLed.position.set(0, 0.15, 0.95);
+    droneGroup.add(rearLed);
+
+    // Arms and motors (X-config quadcopter)
+    const armPositions = [
+      [1.6, 0, -1.6], [-1.6, 0, -1.6],  // Front-left, Front-right
+      [1.6, 0, 1.6],  [-1.6, 0, 1.6]     // Rear-left, Rear-right
+    ];
+    const armColors = [0xef4444, 0xef4444, 0x22c55e, 0x22c55e]; // front=red, rear=green
+
     armPositions.forEach((pos, i) => {
-      // Arm
-      const armGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.8);
-      const armMat = new THREE.MeshStandardMaterial({ 
-        color: 0x27272a,
-        metalness: 0.8,
-        roughness: 0.3
-      });
+      // Arm tube
+      const armLen = Math.sqrt(pos[0]*pos[0] + pos[2]*pos[2]) * 0.45;
+      const armGeo = new THREE.CylinderGeometry(0.08, 0.08, armLen);
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x27272a, metalness: 0.8, roughness: 0.3 });
       const arm = new THREE.Mesh(armGeo, armMat);
-      arm.position.set(pos[0] * 0.6, 0, pos[2] * 0.6);
-      arm.rotation.z = Math.PI / 4 * (pos[0] > 0 ? 1 : -1) * (pos[2] > 0 ? 1 : -1);
+      const angle = Math.atan2(pos[2], pos[0]);
+      arm.rotation.z = Math.PI / 2;
+      arm.rotation.x = -angle;
+      arm.position.set(pos[0] * 0.45, 0, pos[2] * 0.45);
       droneGroup.add(arm);
 
-      // Motor housing
-      const motorGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.15);
+      // Motor housing (cylinder)
+      const motorGeo = new THREE.CylinderGeometry(0.22, 0.25, 0.25, 16);
       const motorMat = new THREE.MeshStandardMaterial({ 
-        color: 0x06b6d4,
-        emissive: 0x06b6d4,
-        emissiveIntensity: 0.3,
-        metalness: 0.9,
-        roughness: 0.1
+        color: 0x374151, metalness: 0.9, roughness: 0.1 
       });
       const motor = new THREE.Mesh(motorGeo, motorMat);
-      motor.position.set(pos[0], 0.2, pos[2]);
+      motor.position.set(pos[0], 0.15, pos[2]);
       droneGroup.add(motor);
 
-      // Propeller disc (glowing)
-      const propGeo = new THREE.CircleGeometry(0.4, 32);
-      const propMat = new THREE.MeshBasicMaterial({ 
-        color: 0x06b6d4,
-        transparent: true,
-        opacity: 0.2,
-        side: THREE.DoubleSide
+      // Motor bell top
+      const bellGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.1, 16);
+      const bellMat = new THREE.MeshStandardMaterial({ 
+        color: armColors[i], emissive: armColors[i], emissiveIntensity: 0.3, metalness: 0.9, roughness: 0.1 
       });
-      const prop = new THREE.Mesh(propGeo, propMat);
-      prop.position.set(pos[0], 0.3, pos[2]);
-      prop.rotation.x = -Math.PI / 2;
-      prop.name = `prop_${i}`;
-      droneGroup.add(prop);
+      const bell = new THREE.Mesh(bellGeo, bellMat);
+      bell.position.set(pos[0], 0.32, pos[2]);
+      droneGroup.add(bell);
+
+      // Propeller blades (2 blades per motor)
+      for (let b = 0; b < 2; b++) {
+        const bladeGeo = new THREE.BoxGeometry(1.4, 0.02, 0.12);
+        const bladeMat = new THREE.MeshStandardMaterial({ 
+          color: 0x06b6d4, transparent: true, opacity: 0.7, metalness: 0.3, roughness: 0.5
+        });
+        const blade = new THREE.Mesh(bladeGeo, bladeMat);
+        blade.position.set(pos[0], 0.4, pos[2]);
+        blade.rotation.y = b * Math.PI / 2 + (i * Math.PI / 4);
+        blade.name = `prop_${i}_${b}`;
+        droneGroup.add(blade);
+      }
+
+      // Propeller spin disc (motion blur effect)
+      const propDiscGeo = new THREE.CircleGeometry(0.7, 32);
+      const propDiscMat = new THREE.MeshBasicMaterial({ 
+        color: 0x06b6d4, transparent: true, opacity: 0.08, side: THREE.DoubleSide 
+      });
+      const propDisc = new THREE.Mesh(propDiscGeo, propDiscMat);
+      propDisc.position.set(pos[0], 0.4, pos[2]);
+      propDisc.rotation.x = -Math.PI / 2;
+      propDisc.name = `propdisc_${i}`;
+      droneGroup.add(propDisc);
+
+      // Landing leg
+      const legGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.6);
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x27272a, metalness: 0.6, roughness: 0.4 });
+      const leg = new THREE.Mesh(legGeo, legMat);
+      leg.position.set(pos[0] * 0.7, -0.4, pos[2] * 0.7);
+      droneGroup.add(leg);
+
+      // Landing foot
+      const footGeo = new THREE.BoxGeometry(0.3, 0.04, 0.06);
+      const footMat = new THREE.MeshStandardMaterial({ color: 0x374151, metalness: 0.5 });
+      const foot = new THREE.Mesh(footGeo, footMat);
+      foot.position.set(pos[0] * 0.7, -0.7, pos[2] * 0.7);
+      droneGroup.add(foot);
     });
     
-    // Camera gimbal
-    const camGeo = new THREE.SphereGeometry(0.15, 16, 16);
-    const camMat = new THREE.MeshStandardMaterial({ 
-      color: 0x06b6d4, 
-      emissive: 0x06b6d4, 
-      emissiveIntensity: 0.5 
-    });
-    const camIndicator = new THREE.Mesh(camGeo, camMat);
-    camIndicator.position.set(0.5, -0.2, 0);
-    droneGroup.add(camIndicator);
+    // Camera/gimbal underneath
+    const gimbalArmGeo = new THREE.BoxGeometry(0.08, 0.3, 0.08);
+    const gimbalArmMat = new THREE.MeshStandardMaterial({ color: 0x374151, metalness: 0.7 });
+    const gimbalArm = new THREE.Mesh(gimbalArmGeo, gimbalArmMat);
+    gimbalArm.position.set(0, -0.25, -0.3);
+    droneGroup.add(gimbalArm);
 
-    // Drone light
-    const droneLight = new THREE.PointLight(0x06b6d4, 2, 10);
-    droneLight.position.set(0, -0.5, 0);
-    droneGroup.add(droneLight);
+    const camBodyGeo = new THREE.BoxGeometry(0.35, 0.25, 0.3);
+    const camBodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.2 });
+    const camBody = new THREE.Mesh(camBodyGeo, camBodyMat);
+    camBody.position.set(0, -0.45, -0.3);
+    droneGroup.add(camBody);
+
+    // Camera lens
+    const lensGeo = new THREE.CylinderGeometry(0.1, 0.08, 0.12, 16);
+    const lensMat = new THREE.MeshStandardMaterial({ 
+      color: 0x06b6d4, emissive: 0x06b6d4, emissiveIntensity: 0.6, metalness: 0.95, roughness: 0.05 
+    });
+    const lens = new THREE.Mesh(lensGeo, lensMat);
+    lens.position.set(0, -0.45, -0.5);
+    lens.rotation.x = Math.PI / 2;
+    droneGroup.add(lens);
+
+    // GPS mast
+    const gpsStickGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5);
+    const gpsStickMat = new THREE.MeshStandardMaterial({ color: 0x64748b });
+    const gpsStick = new THREE.Mesh(gpsStickGeo, gpsStickMat);
+    gpsStick.position.set(0, 0.7, 0.3);
+    droneGroup.add(gpsStick);
+
+    const gpsGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.06, 16);
+    const gpsMat = new THREE.MeshStandardMaterial({ 
+      color: 0x475569, emissive: 0x22c55e, emissiveIntensity: 0.1, metalness: 0.7 
+    });
+    const gps = new THREE.Mesh(gpsGeo, gpsMat);
+    gps.position.set(0, 0.97, 0.3);
+    droneGroup.add(gps);
+
+    // Optical Flow sensor underneath (MATEK 3901-L0X)
+    const flowGeo = new THREE.BoxGeometry(0.25, 0.1, 0.25);
+    const flowMat = new THREE.MeshStandardMaterial({ 
+      color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 0.4, metalness: 0.8 
+    });
+    const flowSensor = new THREE.Mesh(flowGeo, flowMat);
+    flowSensor.position.set(0, -0.3, 0.2);
+    droneGroup.add(flowSensor);
+
+    // Drone navigation lights
+    const droneLightFront = new THREE.PointLight(0xef4444, 1.5, 8);
+    droneLightFront.position.set(0, -0.2, -1.6);
+    droneGroup.add(droneLightFront);
+
+    const droneLightRear = new THREE.PointLight(0x22c55e, 1.5, 8);
+    droneLightRear.position.set(0, -0.2, 1.6);
+    droneGroup.add(droneLightRear);
+
+    const droneLightBottom = new THREE.PointLight(0x06b6d4, 2, 12);
+    droneLightBottom.position.set(0, -0.8, 0);
+    droneGroup.add(droneLightBottom);
 
     droneGroup.position.set(0, 8, 0);
     scene.add(droneGroup);
@@ -280,11 +389,14 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating }) => {
       // Drone hover animation
       if (droneRef.current) {
         droneRef.current.position.y += Math.sin(elapsed * 2) * 0.01;
+        // Subtle tilt for realism
+        droneRef.current.rotation.x = Math.sin(elapsed * 1.3) * 0.02;
+        droneRef.current.rotation.z = Math.cos(elapsed * 1.7) * 0.015;
         
-        // Rotate propellers
+        // Rotate propeller blades
         droneRef.current.children.forEach(child => {
           if (child.name && child.name.startsWith('prop_')) {
-            child.rotation.z += delta * 20;
+            child.rotation.y += delta * 25;
           }
         });
       }
