@@ -174,8 +174,12 @@ test.describe('Visual Homing - 3D Map & Simulation', () => {
     await expect(speedSlider).toHaveAttribute('max', '5');
     await expect(speedSlider).toHaveAttribute('step', '0.1');
     
-    // Change slider value via JavaScript (more reliable than dragging)
-    await speedSlider.fill('3.0');
+    // For range inputs, we need to use evaluate to change the value
+    await speedSlider.evaluate((el: HTMLInputElement) => {
+      el.value = '3.0';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
     
     // Verify speed control shows new value
     const speedControl = page.getByTestId('speed-control');
