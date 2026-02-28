@@ -535,38 +535,154 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
     }
   }, [route]);
 
-  // Handle simulation
+  // Handle simulation (normal + Smart RTL)
   useEffect(() => {
     if (!isSimulating || !route || !route.points) {
       progressRef.current = 0;
+      rtlPathRef.current = null;
       if (droneRef.current) {
         droneRef.current.position.set(0, 8, 0);
       }
+      if (onTelemetryUpdate) onTelemetryUpdate(null);
       return;
     }
 
+    // Generate Smart RTL return path if in RTL mode
+    if (smartRTLRef.current && !rtlPathRef.current) {
+      const pts = route.points;
+      const outPath = pts.map(p => ({ ...p }));
+      // Return path: reverse, initially at high altitude, then descend
+      const returnPath = [];
+      const highAlt = 40; // High altitude for RTL
+      const totalReturn = pts.length;
+      const descentStart = Math.floor(totalReturn * 0.5);
+      
+      for (let i = pts.length - 1; i >= 0; i--) {
+        const rIdx = pts.length - 1 - i;
+        const p = pts[i];
+        let alt;
+        if (rIdx < descentStart) {
+          alt = highAlt; // HIGH_ALT phase
+        } else {
+          const descentProgress = (rIdx - descentStart) / (totalReturn - descentStart);
+          alt = highAlt * (1 - descentProgress); // DESCENT + LOW_ALT
+          if (alt < 2) alt = Math.max(0.5, alt * (1 - descentProgress)); // PRECISION_LAND
+        }
+        returnPath.push({ x: p.x, y: p.y, z: Math.max(0.3, alt) });
+      }
+      rtlPathRef.current = { outPath, returnPath, totalLen: outPath.length + returnPath.length };
+    }
+
     let frameId;
-    const simulateStep = () => {
-      if (progressRef.current >= route.points.length - 1) {
+    let lastTime = performance.now();
+    
+    const simulateStep = (currentTime) => {
+      const dt = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      
+      const speed = speedRef.current * 0.15; // Base step scaled by slider
+      const isRTL = smartRTLRef.current && rtlPathRef.current;
+      
+      let points, totalLen, phase, progress;
+      
+      if (isRTL) {
+        const rtl = rtlPathRef.current;
+        totalLen = rtl.totalLen;
+        const idx = Math.floor(progressRef.current);
+        
+        if (idx < rtl.outPath.length) {
+          points = rtl.outPath;
+          phase = 'record';
+          progress = idx;
+        } else {
+          points = rtl.returnPath;
+          progress = idx - rtl.outPath.length;
+          const returnPct = progress / rtl.returnPath.length;
+          const alt = points[Math.min(progress, points.length - 1)]?.z || 0;
+          
+          if (alt > 30) phase = 'high_alt';
+          else if (alt > 10) phase = 'descent';
+          else if (alt > 3) phase = 'low_alt';
+          else phase = 'precision_land';
+        }
+      } else {
+        points = route.points;
+        totalLen = points.length;
+        phase = 'normal';
+        progress = Math.floor(progressRef.current);
+      }
+
+      // Loop or stop
+      if (progressRef.current >= totalLen - 1) {
         progressRef.current = 0;
+        rtlPathRef.current = null;
+        if (isRTL) {
+          // Re-generate for next loop
+          smartRTLRef.current = smartRTLMode;
+        }
       }
       
-      const point = route.points[Math.floor(progressRef.current)];
+      const currentIdx = isRTL
+        ? (Math.floor(progressRef.current) < rtlPathRef.current?.outPath.length
+            ? Math.floor(progressRef.current)
+            : Math.floor(progressRef.current) - (rtlPathRef.current?.outPath.length || 0))
+        : Math.floor(progressRef.current);
+      const currentPoints = isRTL
+        ? (Math.floor(progressRef.current) < (rtlPathRef.current?.outPath.length || 0) ? rtlPathRef.current.outPath : rtlPathRef.current.returnPath)
+        : points;
+      
+      const point = currentPoints[Math.min(currentIdx, currentPoints.length - 1)];
+      const nextPoint = currentPoints[Math.min(currentIdx + 1, currentPoints.length - 1)];
+      
       if (droneRef.current && point) {
         droneRef.current.position.set(point.x, point.z, -point.y);
-        droneRef.current.rotation.y = point.yaw || 0;
+        
+        // Calculate yaw toward next point
+        if (nextPoint && (nextPoint.x !== point.x || nextPoint.y !== point.y)) {
+          const yaw = Math.atan2(nextPoint.x - point.x, -(nextPoint.y - point.y));
+          droneRef.current.rotation.y = yaw;
+        }
+
+        // Change bottom light color based on phase
+        const bottomLight = droneRef.current.children.find(c => c.isPointLight && c.position.y < -0.5);
+        if (bottomLight) {
+          const phaseColors = {
+            record: 0x06b6d4,
+            normal: 0x06b6d4,
+            high_alt: 0xfbbf24,
+            descent: 0xf97316,
+            low_alt: 0xa855f7,
+            precision_land: 0x22c55e,
+          };
+          bottomLight.color.setHex(phaseColors[phase] || 0x06b6d4);
+        }
+      }
+
+      // Calculate speed (approximate m/s)
+      const speedMs = point && nextPoint
+        ? Math.sqrt((nextPoint.x-point.x)**2 + (nextPoint.y-point.y)**2 + (nextPoint.z-point.z)**2) * speedRef.current * 5
+        : 0;
+
+      // Report telemetry to parent
+      if (onTelemetryUpdate && point) {
+        onTelemetryUpdate({
+          altitude: point.z?.toFixed(1) || '0',
+          speed: speedMs.toFixed(1),
+          phase,
+          progress: ((progressRef.current / totalLen) * 100).toFixed(0),
+        });
       }
       
-      progressRef.current += 0.3;
+      progressRef.current += speed * Math.max(dt * 60, 0.5); // Frame-rate independent
       frameId = requestAnimationFrame(simulateStep);
     };
     
-    simulateStep();
+    frameId = requestAnimationFrame(simulateStep);
     
     return () => {
       if (frameId) cancelAnimationFrame(frameId);
     };
-  }, [isSimulating, route]);
+  }, [isSimulating, route, smartRTLMode, onTelemetryUpdate]);
 
   return (
     <div 
