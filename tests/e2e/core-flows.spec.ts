@@ -62,6 +62,11 @@ test.describe('Visual Homing - Core Flows', () => {
     await expect(page.getByTestId('history-section')).toBeVisible();
     await expect(page.getByTestId('tab-history')).toHaveClass(/bg-cyan-500/);
     
+    // Click Telemetry tab (NEW)
+    await navigateToTab(page, 'tab-telemetry');
+    await expect(page.getByTestId('telemetry-section')).toBeVisible();
+    await expect(page.getByTestId('tab-telemetry')).toHaveClass(/bg-cyan-500/);
+    
     // Click back to Map tab
     await navigateToTab(page, 'tab-map');
     await expect(page.getByTestId('map-panel')).toBeVisible();
