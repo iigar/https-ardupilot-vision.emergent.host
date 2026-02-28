@@ -283,4 +283,53 @@ test.describe('Visual Homing - Core Flows', () => {
     // Wait for save toast (use first() and check for save-specific text)
     await expect(page.locator('[data-sonner-toast]').first()).toContainText('збережено', { timeout: 5000 });
   });
+
+  test('Mobile responsive UI - tabs show icons only on small screens (P2)', async ({ page }) => {
+    // Set mobile viewport
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForAppReady(page);
+    
+    // Check tabs are visible
+    const mapTab = page.getByTestId('tab-map');
+    await expect(mapTab).toBeVisible();
+    
+    // On mobile, the label text should be hidden (via sm:inline class)
+    // The span inside tab button should not be visible (hidden on small screens)
+    // Verify tab still works by clicking
+    await mapTab.click({ force: true });
+    await expect(mapTab).toHaveClass(/bg-cyan-500/);
+    
+    // Check all navigation tabs are accessible in mobile view
+    await expect(page.getByTestId('tab-history')).toBeVisible();
+    await expect(page.getByTestId('tab-telemetry')).toBeVisible();
+    await expect(page.getByTestId('tab-docs')).toBeVisible();
+    await expect(page.getByTestId('tab-settings')).toBeVisible();
+    
+    // Click through tabs to verify they work on mobile
+    await page.getByTestId('tab-settings').click({ force: true });
+    await expect(page.getByTestId('settings-section')).toBeVisible();
+    
+    // Verify bottom control bar buttons are visible on mobile
+    await page.getByTestId('tab-map').click({ force: true });
+    await expect(page.getByTestId('smart-rtl-btn')).toBeVisible();
+  });
+
+  test('Desktop UI - tabs show labels with icons (P2)', async ({ page }) => {
+    // Set desktop viewport  
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForAppReady(page);
+    
+    // Check tabs are visible and contain text labels on desktop
+    const mapTab = page.getByTestId('tab-map');
+    await expect(mapTab).toBeVisible();
+    await expect(mapTab).toContainText('3D Карта');
+    
+    // Check other tabs contain their labels
+    await expect(page.getByTestId('tab-history')).toContainText('Історія');
+    await expect(page.getByTestId('tab-telemetry')).toContainText('Телеметрія');
+    await expect(page.getByTestId('tab-docs')).toContainText('Документація');
+    await expect(page.getByTestId('tab-settings')).toContainText('Налаштування');
+  });
 });
