@@ -1,0 +1,120 @@
+{
+  "summary": "Update mode testing complete. Tested new Telemetry tab with sensor monitoring (MATEK 3901-L0X, TF-Luna) and Smart RTL status panel. All 21 backend tests passed, all 19 frontend tests passed. Updated core-flows.spec.ts to include new Telemetry tab and tab-telemetry navigation tests.",
+  "mode": "update",
+  "baseline_commit": "1e025cb1e596926efe14cb9cd300e165e818d4f9",
+  "head_commit": "284b6631808900851915918515dc4f40a90ac897",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "SensorCard, GlassPanel, AnimatedCard",
+        "issue": "Components don't forward data-testid prop - they accept testId/data-testid as prop but don't spread it to the underlying DOM element",
+        "selector": "N/A",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 3,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": ["/app/tests/e2e/core-flows.spec.ts"],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_api.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/tests/e2e/core-flows.spec.ts",
+    "/app/tests/e2e/map-simulation.spec.ts",
+    "/app/tests/e2e/route-history.spec.ts"
+  ],
+  "action_items": [
+    "LOW PRIORITY: Fix data-testid forwarding in SensorCard, GlassPanel, and AnimatedCard components by spreading remaining props. Currently these components accept testId/data-testid as props but don't render them on the DOM element."
+  ],
+  "updated_files": [
+    "/app/tests/e2e/core-flows.spec.ts"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21)",
+    "frontend": "100% (19/19)"
+  },
+  "seed_data_creation": "Test routes created dynamically with TEST_ prefix, cleaned up after each test",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All telemetry features tested and working. New Telemetry tab navigation, sensor cards (MATEK 3901-L0X, TF-Luna), Smart RTL panel with phase indicators all verified. Note: GlassPanel and AnimatedCard components don't forward data-testid props, so tests use text locators for those elements.",
+  "tests_summary": {
+    "backend_tests": {
+      "passed": 21,
+      "categories": [
+        "Root API (1 test)",
+        "Documentation (4 tests)",
+        "Routes (7 tests)",
+        "Drone Position (2 tests)",
+        "Simulation (1 test)",
+        "Firmware (1 test)",
+        "Sensors (2 tests)",
+        "Smart RTL (3 tests)"
+      ]
+    },
+    "frontend_tests": {
+      "core-flows.spec.ts": [
+        "App loads with header and navigation (v2.0 badge)",
+        "Navigation tabs visible including new Telemetry tab",
+        "Tab navigation switches between all 6 tabs",
+        "About section displays project info with sensors specs",
+        "Documentation tab displays 9 documents",
+        "Route History tab displays correctly",
+        "NEW: Telemetry tab displays sensor monitoring dashboard"
+      ],
+      "map-simulation.spec.ts": [
+        "3D Map container and canvas render",
+        "Simulation buttons visible and functional",
+        "Start/Stop simulation button works",
+        "Reset button works",
+        "New route button loads new route",
+        "Map stats display keyframes and distance",
+        "Auto-save toggle is visible and functional"
+      ],
+      "route-history.spec.ts": [
+        "API: List routes endpoint returns array",
+        "API: Save and delete route via API",
+        "UI: Enable auto-save and save route",
+        "UI: Route History page displays saved routes",
+        "UI: Delete route from history"
+      ]
+    }
+  },
+  "new_features_tested": {
+    "telemetry_tab": {
+      "navigation": "data-testid='tab-telemetry' works correctly",
+      "section": "data-testid='telemetry-section' renders after API data loads",
+      "refresh_button": "data-testid='telemetry-refresh-btn' visible",
+      "sensors": {
+        "optical_flow": "MATEK 3901-L0X card displays with flow_x, flow_y, quality metrics",
+        "lidar": "TF-Luna LiDAR card displays with distance and signal metrics"
+      },
+      "smart_rtl": {
+        "panel": "Smart RTL panel with 'Гібридна навігація повернення' subtitle",
+        "metrics": "Висота, До дому, Прогрес, Джерело displayed",
+        "phases": "data-testid='smart-rtl-phases' shows HIGH ALT, DESCENT, LOW ALT, LANDING indicators"
+      }
+    }
+  },
+  "api_endpoints_verified": {
+    "new_endpoints": [
+      "GET /api/sensors/status - returns optical flow + LiDAR data",
+      "POST /api/sensors/status - updates sensor data",
+      "GET /api/smart-rtl/status - returns RTL status with phase",
+      "POST /api/smart-rtl/status - updates RTL status",
+      "GET /api/smart-rtl/config - returns hybrid nav config"
+    ],
+    "existing_endpoints_regression": "All 16 existing endpoints still working"
+  }
+}
