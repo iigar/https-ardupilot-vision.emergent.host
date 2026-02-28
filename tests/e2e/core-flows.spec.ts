@@ -157,9 +157,9 @@ test.describe('Visual Homing - Core Flows', () => {
     // Check refresh button is visible
     await expect(page.getByTestId('telemetry-refresh-btn')).toBeVisible();
     
-    // Check sensor cards are displayed
+    // Wait for sensor cards to load (they appear after API data fetching)
     const opticalFlowCard = page.getByTestId('sensor-optical-flow');
-    await expect(opticalFlowCard).toBeVisible();
+    await expect(opticalFlowCard).toBeVisible({ timeout: 10000 });
     await expect(opticalFlowCard).toContainText('MATEK 3901-L0X');
     
     const lidarCard = page.getByTestId('sensor-lidar');
