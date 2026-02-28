@@ -318,6 +318,183 @@ async def get_smart_rtl_config():
     }
 
 
+# ===== Settings CRUD =====
+class SystemSettings(BaseModel):
+    camera_type: str = "usb_capture"
+    camera_device: str = "/dev/video0"
+    camera_resolution_w: int = 640
+    camera_resolution_h: int = 480
+    camera_fps: int = 30
+    mavlink_port: str = "/dev/serial0"
+    mavlink_baud: int = 115200
+    flow_enabled: bool = True
+    flow_port: str = "/dev/serial1"
+    lidar_enabled: bool = True
+    lidar_port: str = "/dev/serial2"
+    rtl_high_alt: float = 50.0
+    rtl_precision_alt: float = 5.0
+    rtl_descent_pct: float = 0.5
+    rtl_descent_rate: float = 2.0
+    rtl_high_speed: float = 10.0
+    rtl_low_speed: float = 3.0
+    rtl_precision_speed: float = 0.5
+    flow_min_quality: int = 50
+    visual_min_confidence: float = 0.3
+    web_port: int = 5000
+    autostart: bool = True
+    stream_enabled: bool = True
+
+@api_router.get("/settings")
+async def get_settings():
+    """Get system settings from DB or return defaults"""
+    doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
+    if doc:
+        return doc
+    return SystemSettings().model_dump()
+
+@api_router.post("/settings")
+async def save_settings(settings: SystemSettings):
+    """Save system settings to DB"""
+    doc = settings.model_dump()
+    await db.settings.update_one(
+        {"_id": "system"},
+        {"$set": doc},
+        upsert=True
+    )
+    return {"success": True}
+
+@api_router.post("/settings/reset")
+async def reset_settings():
+    """Reset settings to defaults"""
+    await db.settings.delete_one({"_id": "system"})
+    return SystemSettings().model_dump()
+
+
+# ===== Route Export =====
+@api_router.get("/routes/{route_id}/export/json")
+async def export_route_json(route_id: str):
+    """Export route as JSON file"""
+    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+    if not route:
+        return {"error": "Route not found"}
+    return route
+
+@api_router.get("/routes/{route_id}/export/kml")
+async def export_route_kml(route_id: str):
+    """Export route as KML for Google Earth"""
+    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+    if not route:
+        return {"error": "Route not found"}
+
+    name = route.get("name", "Route")
+    points = route.get("points", [])
+
+    # Build KML with coordinates
+    coords_str = ""
+    for p in points:
+        # KML uses lon,lat,alt — we use x as lon offset, y as lat offset, z as alt
+        lon = 30.5234 + p.get("x", 0) * 0.00001  # Kyiv longitude + offset
+        lat = 50.4501 + p.get("y", 0) * 0.00001   # Kyiv latitude + offset
+        alt = p.get("z", 0)
+        coords_str += f"          {lon},{lat},{alt}\n"
+
+    kml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>{name}</name>
+    <description>Visual Homing Route Export</description>
+    <Style id="routeStyle">
+      <LineStyle>
+        <color>ff00ffff</color>
+        <width>3</width>
+      </LineStyle>
+    </Style>
+    <Placemark>
+      <name>{name}</name>
+      <styleUrl>#routeStyle</styleUrl>
+      <LineString>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <coordinates>
+{coords_str}        </coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>"""
+
+    return StreamingResponse(
+        iter([kml]),
+        media_type="application/vnd.google-earth.kml+xml",
+        headers={"Content-Disposition": f"attachment; filename={name}.kml"}
+    )
+
+
+# ===== Video Stream =====
+@api_router.get("/stream/status")
+async def stream_status():
+    """Check video stream availability"""
+    return {
+        "available": False,
+        "message": "Camera stream available only on Raspberry Pi",
+        "url": "/api/stream/video",
+        "type": "mjpeg"
+    }
+
+
+# ===== WebSocket =====
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, data: dict):
+        for conn in self.active_connections:
+            try:
+                await conn.send_json(data)
+            except Exception:
+                pass
+
+ws_manager = ConnectionManager()
+
+@app.websocket("/ws/telemetry")
+async def websocket_telemetry(websocket: WebSocket):
+    """WebSocket for real-time telemetry updates"""
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            # Send current state every 500ms
+            data = {
+                "type": "telemetry",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "sensors": _sensor_status.model_dump(),
+                "smart_rtl": _smart_rtl_status.model_dump(),
+                "position": _current_position.model_dump()
+            }
+            await websocket.send_json(data)
+            
+            # Also listen for incoming commands
+            try:
+                msg = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
+                cmd = json.loads(msg)
+                if cmd.get("type") == "update_sensors":
+                    global _sensor_status
+                    _sensor_status = SensorStatus(**cmd.get("data", {}))
+                elif cmd.get("type") == "update_rtl":
+                    global _smart_rtl_status
+                    _smart_rtl_status = SmartRTLStatus(**cmd.get("data", {}))
+            except asyncio.TimeoutError:
+                pass
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+    except Exception:
+        ws_manager.disconnect(websocket)
+
+
 # Status endpoints (original)
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
