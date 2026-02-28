@@ -76,18 +76,23 @@ test.describe('Visual Homing - Core Flows', () => {
     // Check project title
     await expect(aboutSection).toContainText('Visual Homing System');
     
-    // Check features grid
+    // Check features grid - including NEW Smart RTL and Optical Flow features
     await expect(aboutSection).toContainText('Без GPS залежності');
     await expect(aboutSection).toContainText('Без компаса');
     await expect(aboutSection).toContainText('Teach & Repeat');
     await expect(aboutSection).toContainText('Термальна камера');
+    await expect(aboutSection).toContainText('Smart RTL');  // NEW: Smart RTL feature
+    await expect(aboutSection).toContainText('Optical Flow');  // NEW: Optical Flow feature
     
-    // Check specifications table
+    // Check specifications table - including NEW sensor modules
     await expect(aboutSection).toContainText('Raspberry Pi Zero 2 W');
     await expect(aboutSection).toContainText('ArduCopter');
     await expect(aboutSection).toContainText('MAVLink');
     await expect(aboutSection).toContainText('Python 3');
     await expect(aboutSection).toContainText('C++17');
+    await expect(aboutSection).toContainText('MATEK 3901-L0X');  // NEW: Optical Flow sensor
+    await expect(aboutSection).toContainText('TF-Luna');  // NEW: LiDAR sensor
+    await expect(aboutSection).toContainText('Matek H743-Slim V3');  // Flight controller
   });
 
   test('Documentation tab displays document list', async ({ page }) => {
