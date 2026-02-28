@@ -249,14 +249,14 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
 
       // Landing leg
       const legGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.6);
-      const legMat = new THREE.MeshStandardMaterial({ color: 0x27272a, metalness: 0.6, roughness: 0.4 });
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.6, roughness: 0.4 });
       const leg = new THREE.Mesh(legGeo, legMat);
       leg.position.set(pos[0] * 0.7, -0.4, pos[2] * 0.7);
       droneGroup.add(leg);
 
       // Landing foot
       const footGeo = new THREE.BoxGeometry(0.3, 0.04, 0.06);
-      const footMat = new THREE.MeshStandardMaterial({ color: 0x374151, metalness: 0.5 });
+      const footMat = new THREE.MeshStandardMaterial({ color: 0x8b95a5, metalness: 0.5 });
       const foot = new THREE.Mesh(footGeo, footMat);
       foot.position.set(pos[0] * 0.7, -0.7, pos[2] * 0.7);
       droneGroup.add(foot);
