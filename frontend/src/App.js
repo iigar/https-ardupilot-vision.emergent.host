@@ -9,18 +9,19 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 // Glass Panel Component
-const GlassPanel = ({ children, className = "" }) => (
-  <div className={`backdrop-blur-xl bg-black/60 border border-white/10 rounded-xl shadow-2xl ${className}`}>
+const GlassPanel = ({ children, className = "", ...props }) => (
+  <div className={`backdrop-blur-xl bg-black/60 border border-white/10 rounded-xl shadow-2xl ${className}`} {...props}>
     {children}
   </div>
 );
 
 // Animated Card Component  
-const AnimatedCard = ({ children, className = "", delay = 0 }) => (
+const AnimatedCard = ({ children, className = "", delay = 0, ...props }) => (
   <div 
     className={`animate-slide-up bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-xl 
                 hover:border-cyan-500/50 hover:shadow-glow-sm transition-all duration-300 ${className}`}
     style={{ animationDelay: `${delay}ms` }}
+    {...props}
   >
     {children}
   </div>
