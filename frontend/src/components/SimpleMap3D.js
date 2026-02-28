@@ -147,23 +147,23 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
     // Central body - X-frame center plate
     const bodyGeo = new THREE.BoxGeometry(1.8, 0.2, 1.8);
     const bodyMat = new THREE.MeshStandardMaterial({ 
-      color: 0x1a1a2e, 
-      metalness: 0.9, 
-      roughness: 0.15 
+      color: 0xb8c0cc, 
+      metalness: 0.7, 
+      roughness: 0.25 
     });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     droneGroup.add(body);
 
     // Top plate (FC mount)
     const topPlateGeo = new THREE.BoxGeometry(1.2, 0.08, 1.2);
-    const topPlateMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.2 });
+    const topPlateMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.8, roughness: 0.2 });
     const topPlate = new THREE.Mesh(topPlateGeo, topPlateMat);
     topPlate.position.y = 0.25;
     droneGroup.add(topPlate);
 
     // Battery on top
     const battGeo = new THREE.BoxGeometry(0.8, 0.25, 0.4);
-    const battMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5, roughness: 0.4 });
+    const battMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, metalness: 0.5, roughness: 0.4 });
     const battery = new THREE.Mesh(battGeo, battMat);
     battery.position.y = 0.45;
     droneGroup.add(battery);
