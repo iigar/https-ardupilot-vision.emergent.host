@@ -377,7 +377,7 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
       <GlassPanel className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-4 overflow-x-auto scrollbar-hide"  data-testid="map-controls">
         <button
           onClick={() => { setIsSimulating(!isSimulating); if (isSimulating) { setSmartRTLMode(false); setTelemetry(null); } }}
-          className={`flex items-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300
+          className={`flex items-center gap-1.5 px-3 py-2.5 md:px-5 md:py-3 rounded-lg font-bold transition-all duration-300 text-sm shrink-0
                      ${isSimulating 
                        ? 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30' 
                        : 'bg-cyan-500 text-black shadow-glow hover:scale-105'}`}
@@ -389,7 +389,7 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
 
         <button
           onClick={handleSmartRTL}
-          className={`flex items-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300
+          className={`flex items-center gap-1.5 px-3 py-2.5 md:px-5 md:py-3 rounded-lg font-bold transition-all duration-300 text-sm shrink-0
                      ${smartRTLMode && isSimulating
                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30' 
                        : 'bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 border border-amber-500/20 hover:border-amber-500/40'}`}
