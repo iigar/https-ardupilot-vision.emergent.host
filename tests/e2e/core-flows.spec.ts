@@ -169,13 +169,17 @@ test.describe('Visual Homing - Core Flows', () => {
     await expect(telemetrySection).toContainText('Відстань');
     await expect(telemetrySection).toContainText('Сигнал');
     
-    // Check Smart RTL panel
-    const rtlPanel = page.getByTestId('smart-rtl-panel');
-    await expect(rtlPanel).toBeVisible();
-    await expect(rtlPanel).toContainText('Smart RTL');
-    await expect(rtlPanel).toContainText('Гібридна навігація повернення');
+    // Check Smart RTL panel (GlassPanel doesn't forward data-testid, use text locator)
+    await expect(page.locator('h3:has-text("Smart RTL")')).toBeVisible();
+    await expect(telemetrySection).toContainText('Гібридна навігація повернення');
     
-    // Check phase indicators are visible
+    // Check RTL metrics are displayed
+    await expect(telemetrySection).toContainText('Висота');
+    await expect(telemetrySection).toContainText('До дому');
+    await expect(telemetrySection).toContainText('Прогрес');
+    await expect(telemetrySection).toContainText('Джерело');
+    
+    // Check phase indicators are visible (this uses data-testid directly on a div)
     const phaseIndicators = page.getByTestId('smart-rtl-phases');
     await expect(phaseIndicators).toBeVisible();
     
