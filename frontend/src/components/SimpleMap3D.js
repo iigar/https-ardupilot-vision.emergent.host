@@ -208,7 +208,7 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
       // Motor housing (cylinder)
       const motorGeo = new THREE.CylinderGeometry(0.22, 0.25, 0.25, 16);
       const motorMat = new THREE.MeshStandardMaterial({ 
-        color: 0x374151, metalness: 0.9, roughness: 0.1 
+        color: 0x8b95a5, metalness: 0.9, roughness: 0.1 
       });
       const motor = new THREE.Mesh(motorGeo, motorMat);
       motor.position.set(pos[0], 0.15, pos[2]);
