@@ -264,13 +264,13 @@ const SimpleMap3D = ({ route: externalRoute, isSimulating, speedMultiplier = 1.0
     
     // Camera/gimbal underneath
     const gimbalArmGeo = new THREE.BoxGeometry(0.08, 0.3, 0.08);
-    const gimbalArmMat = new THREE.MeshStandardMaterial({ color: 0x374151, metalness: 0.7 });
+    const gimbalArmMat = new THREE.MeshStandardMaterial({ color: 0x8b95a5, metalness: 0.7 });
     const gimbalArm = new THREE.Mesh(gimbalArmGeo, gimbalArmMat);
     gimbalArm.position.set(0, -0.25, -0.3);
     droneGroup.add(gimbalArm);
 
     const camBodyGeo = new THREE.BoxGeometry(0.35, 0.25, 0.3);
-    const camBodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.2 });
+    const camBodyMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, metalness: 0.8, roughness: 0.2 });
     const camBody = new THREE.Mesh(camBodyGeo, camBodyMat);
     camBody.position.set(0, -0.45, -0.3);
     droneGroup.add(camBody);
