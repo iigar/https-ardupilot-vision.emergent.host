@@ -732,7 +732,7 @@ function App() {
             <div>
               <h1 className="font-heading font-bold text-lg text-white">Visual Homing</h1>
             </div>
-            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-zinc-400">v1.0</span>
+            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-zinc-400">v2.0</span>
           </div>
 
           {/* Navigation */}
