@@ -202,6 +202,9 @@ const RouteHistory = ({ routes, onSelect, onDelete, loading }) => {
 const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
   const [route, setRoute] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [smartRTLMode, setSmartRTLMode] = useState(false);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1.0);
+  const [telemetry, setTelemetry] = useState(null);
   const [stats, setStats] = useState({ keyframes: 0, distance: 0 });
 
   const loadDemoRoute = async () => {
@@ -232,11 +235,37 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
     }
   };
 
+  const handleSmartRTL = () => {
+    if (!isSimulating) {
+      setSmartRTLMode(true);
+      setIsSimulating(true);
+    } else {
+      setSmartRTLMode(!smartRTLMode);
+    }
+  };
+
+  const phaseLabels = {
+    record: { label: 'ЗАПИС', color: 'text-cyan-400', bg: 'bg-cyan-500/20 border-cyan-500/30' },
+    normal: { label: 'ПОЛІТ', color: 'text-cyan-400', bg: 'bg-cyan-500/20 border-cyan-500/30' },
+    high_alt: { label: 'HIGH ALT', color: 'text-amber-400', bg: 'bg-amber-500/20 border-amber-500/30' },
+    descent: { label: 'DESCENT', color: 'text-orange-400', bg: 'bg-orange-500/20 border-orange-500/30' },
+    low_alt: { label: 'LOW ALT', color: 'text-purple-400', bg: 'bg-purple-500/20 border-purple-500/30' },
+    precision_land: { label: 'LANDING', color: 'text-emerald-400', bg: 'bg-emerald-500/20 border-emerald-500/30' },
+  };
+
+  const currentPhase = phaseLabels[telemetry?.phase] || phaseLabels.normal;
+
   return (
     <div className="relative h-[calc(100vh-80px)] overflow-hidden" data-testid="map-panel">
       {/* 3D Canvas Background */}
       <div className="absolute inset-0 z-0">
-        <SimpleMap3D route={route} isSimulating={isSimulating} />
+        <SimpleMap3D 
+          route={route} 
+          isSimulating={isSimulating} 
+          speedMultiplier={speedMultiplier}
+          smartRTLMode={smartRTLMode}
+          onTelemetryUpdate={setTelemetry}
+        />
       </div>
 
       {/* Top Control Bar */}
@@ -272,11 +301,66 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
         </div>
       </GlassPanel>
 
+      {/* HUD Overlay - Altitude, Speed, Phase */}
+      {isSimulating && telemetry && (
+        <div className="absolute top-20 right-4 z-20 space-y-2 animate-fade-in" data-testid="hud-overlay">
+          {/* Phase Badge */}
+          <div className={`px-4 py-2 rounded-lg border backdrop-blur-md font-mono text-sm font-bold text-center ${currentPhase.bg}`}>
+            <span className={currentPhase.color}>{currentPhase.label}</span>
+          </div>
+          
+          {/* Altitude */}
+          <div className="bg-black/70 backdrop-blur-md rounded-lg border border-zinc-700/50 px-4 py-3 text-center min-w-[120px]">
+            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Висота</div>
+            <div className="font-mono font-bold text-2xl text-white">{telemetry.altitude}<span className="text-zinc-500 text-sm ml-1">м</span></div>
+          </div>
+          
+          {/* Speed */}
+          <div className="bg-black/70 backdrop-blur-md rounded-lg border border-zinc-700/50 px-4 py-3 text-center">
+            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Швидкість</div>
+            <div className="font-mono font-bold text-2xl text-white">{telemetry.speed}<span className="text-zinc-500 text-sm ml-1">м/с</span></div>
+          </div>
+
+          {/* Progress */}
+          <div className="bg-black/70 backdrop-blur-md rounded-lg border border-zinc-700/50 px-4 py-3 text-center">
+            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Прогрес</div>
+            <div className="font-mono font-bold text-lg text-white">{telemetry.progress}<span className="text-zinc-500 text-sm ml-1">%</span></div>
+            <div className="mt-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-300 ${smartRTLMode ? 'bg-gradient-to-r from-cyan-500 via-amber-500 to-emerald-500' : 'bg-cyan-500'}`}
+                style={{ width: `${telemetry.progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Speed Slider - Left side */}
+      <div className="absolute top-20 left-4 z-20" data-testid="speed-control">
+        <div className="bg-black/70 backdrop-blur-md rounded-lg border border-zinc-700/50 p-3 w-[140px]">
+          <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-2 text-center">Швидкість</div>
+          <input
+            type="range"
+            min="0.1"
+            max="5"
+            step="0.1"
+            value={speedMultiplier}
+            onChange={(e) => setSpeedMultiplier(parseFloat(e.target.value))}
+            className="w-full h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer
+                       [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 
+                       [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cyan-500 [&::-webkit-slider-thumb]:cursor-pointer
+                       [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(6,182,212,0.5)]"
+            data-testid="speed-slider"
+          />
+          <div className="text-center font-mono font-bold text-white text-sm mt-1">x{speedMultiplier.toFixed(1)}</div>
+        </div>
+      </div>
+
       {/* Bottom Control Panel */}
-      <GlassPanel className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center gap-4 px-6 py-4">
+      <GlassPanel className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-center gap-3 px-6 py-4">
         <button
-          onClick={() => setIsSimulating(!isSimulating)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all duration-300
+          onClick={() => { setIsSimulating(!isSimulating); if (isSimulating) { setSmartRTLMode(false); setTelemetry(null); } }}
+          className={`flex items-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300
                      ${isSimulating 
                        ? 'bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30' 
                        : 'bg-cyan-500 text-black shadow-glow hover:scale-105'}`}
@@ -287,8 +371,20 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
         </button>
 
         <button
-          onClick={() => { setIsSimulating(false); loadDemoRoute(); }}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium
+          onClick={handleSmartRTL}
+          className={`flex items-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300
+                     ${smartRTLMode && isSimulating
+                       ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30' 
+                       : 'bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 border border-amber-500/20 hover:border-amber-500/40'}`}
+          data-testid="smart-rtl-btn"
+        >
+          <Navigation size={18} />
+          Smart RTL
+        </button>
+
+        <button
+          onClick={() => { setIsSimulating(false); setSmartRTLMode(false); setTelemetry(null); loadDemoRoute(); }}
+          className="flex items-center gap-2 px-5 py-3 rounded-lg font-medium
                      bg-zinc-800 text-white border border-zinc-700 hover:border-zinc-600 
                      hover:bg-zinc-700 transition-all"
           data-testid="reset-btn"
@@ -299,7 +395,7 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
 
         <button
           onClick={loadDemoRoute}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium
+          className="flex items-center gap-2 px-5 py-3 rounded-lg font-medium
                      bg-zinc-800 text-white border border-zinc-700 hover:border-zinc-600 
                      hover:bg-zinc-700 transition-all"
           data-testid="new-route-btn"
@@ -311,7 +407,7 @@ const MapPanel = ({ onSaveRoute, saveEnabled, setSaveEnabled }) => {
         {saveEnabled && (
           <button
             onClick={handleSaveRoute}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium
+            className="flex items-center gap-2 px-5 py-3 rounded-lg font-medium
                        bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
                        hover:bg-emerald-500/30 transition-all animate-fade-in"
             data-testid="save-route-btn"
