@@ -269,14 +269,17 @@ test.describe('Visual Homing - Core Flows', () => {
     const resetBtn = page.getByTestId('settings-reset-btn');
     await resetBtn.click({ force: true });
     
-    // Wait for toast notification
-    await expect(page.locator('[data-sonner-toast]')).toContainText('скинуто', { timeout: 5000 });
+    // Wait for toast notification (use first() in case multiple toasts)
+    await expect(page.locator('[data-sonner-toast]').first()).toContainText('скинуто', { timeout: 5000 });
+    
+    // Wait a bit for toasts to clear
+    await page.waitForTimeout(1500);
     
     // Click Save button  
     const saveBtn = page.getByTestId('settings-save-btn');
     await saveBtn.click({ force: true });
     
-    // Wait for save toast
-    await expect(page.locator('[data-sonner-toast]')).toContainText('збережено', { timeout: 5000 });
+    // Wait for save toast (use first() and check for save-specific text)
+    await expect(page.locator('[data-sonner-toast]').first()).toContainText('збережено', { timeout: 5000 });
   });
 });
