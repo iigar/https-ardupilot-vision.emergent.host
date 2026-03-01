@@ -187,6 +187,17 @@ class VisualHomingSystem:
                     vy=velocity.vy,
                     vz=velocity.vz
                 )
+            
+            # Debug log every 5 seconds
+            if int(time.time()) % 5 == 0 and not hasattr(self, '_last_debug_log'):
+                logger.info(f"Sending VisOdom: x={pose.x:.2f}, y={pose.y:.2f}, z={self._current_altitude:.2f}, yaw={pose.yaw:.2f}")
+                self._last_debug_log = time.time()
+            elif int(time.time()) % 5 != 0:
+                self._last_debug_log = None
+        elif not self.mavlink.is_connected:
+            # Log connection issue
+            if int(time.time()) % 10 == 0:
+                logger.warning("MAVLink not connected - cannot send VisOdom data")
     
     def _handle_recording(self, frame):
         """Handle recording state"""
