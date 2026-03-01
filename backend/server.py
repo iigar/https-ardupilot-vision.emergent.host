@@ -342,31 +342,55 @@ _smart_rtl_status = SmartRTLStatus()
 @api_router.get("/routes")
 async def list_routes():
     """List all saved routes"""
-    routes = await db.routes.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
-    return routes
+    if db is None:
+        return []
+    try:
+        routes = await db.routes.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+        return routes
+    except Exception as e:
+        logging.warning(f"Failed to list routes: {e}")
+        return []
 
 @api_router.get("/routes/{route_id}")
 async def get_route(route_id: str):
     """Get route by ID"""
-    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
-    if route:
-        return route
-    return {"error": "Route not found"}
+    if db is None:
+        return {"error": "Database not available"}
+    try:
+        route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+        if route:
+            return route
+        return {"error": "Route not found"}
+    except Exception as e:
+        logging.warning(f"Failed to get route: {e}")
+        return {"error": "Database error"}
 
 @api_router.post("/routes")
 async def create_route(route: FlightRoute):
     """Save a new route"""
-    doc = route.model_dump()
-    await db.routes.insert_one(doc)
-    return {"success": True, "id": route.id}
+    if db is None:
+        return {"success": False, "error": "Database not available"}
+    try:
+        doc = route.model_dump()
+        await db.routes.insert_one(doc)
+        return {"success": True, "id": route.id}
+    except Exception as e:
+        logging.warning(f"Failed to create route: {e}")
+        return {"success": False, "error": "Database error"}
 
 @api_router.delete("/routes/{route_id}")
 async def delete_route(route_id: str):
     """Delete a route by ID"""
-    result = await db.routes.delete_one({"id": route_id})
-    if result.deleted_count > 0:
-        return {"success": True, "message": "Route deleted"}
-    return {"error": "Route not found"}
+    if db is None:
+        return {"error": "Database not available"}
+    try:
+        result = await db.routes.delete_one({"id": route_id})
+        if result.deleted_count > 0:
+            return {"success": True, "message": "Route deleted"}
+        return {"error": "Route not found"}
+    except Exception as e:
+        logging.warning(f"Failed to delete route: {e}")
+        return {"error": "Database error"}
 
 @api_router.get("/routes/demo/generate")
 async def generate_demo_route():
