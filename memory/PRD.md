@@ -74,8 +74,42 @@
 - [ ] Pre-flight Checklist UI
 - [ ] WebSocket real-time telemetry updates (infrastructure ready)
 - [ ] Extended analytics dashboard
-- [ ] Mobile app concept
+- [x] **Android App Concept** — концепція та базовий код створено
 
-## Виправлені баги (v2.2.2)
+## Виправлені баги (v2.2.2+)
 - [x] MAVLink TypeError: `vision_position_estimate_send() takes from 8 to 9 positional arguments but 10 were given`
 - [x] HTTP 415 error on `/api/return/start` - ендпоінт не існував
+- [x] MongoDB `load_dotenv(override=False)` для production Atlas
+- [x] Health endpoint `/health` для Kubernetes
+
+## Android App (NEW)
+- **Документація:** `/app/docs/10_android_app.md`
+- **Код:** `/app/android/`
+- **Функції:**
+  - Mobile Hotspot керування
+  - Native UI з Jetpack Compose
+  - 3D карта маршруту
+  - Real-time телеметрія
+  - mDNS discovery для Pi
+- **Tech Stack:** Kotlin, Jetpack Compose, Material 3, Retrofit, Room
+
+## Production URLs
+- **Web UI:** https://optical-rtl.emergent.host
+- **API:** https://optical-rtl.emergent.host/api
+- **Firmware Download:** https://optical-rtl.emergent.host/api/firmware/download/zip
+- **Install Script:** https://optical-rtl.emergent.host/api/scripts/download/install.sh
+
+## Команди запуску на Pi
+```bash
+cd ~/visual_homing
+source ~/venv/bin/activate
+
+# Pi Camera (рекомендовано):
+python main.py --web --camera picamera
+
+# USB камера:
+python main.py --web --camera usb
+
+# Тестовий режим:
+python main.py --web --camera picamera --test-mode
+```
