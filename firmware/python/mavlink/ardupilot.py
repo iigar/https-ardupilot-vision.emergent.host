@@ -219,27 +219,14 @@ class ArduPilotInterface:
             return
         
         try:
-            # Calculate covariance based on confidence
-            # Lower confidence = higher covariance (less trust)
-            pos_cov = (1.0 - confidence) * 10.0 + 0.01
-            ang_cov = (1.0 - confidence) * 1.0 + 0.001
-            
-            # Covariance matrix (upper right triangle)
-            covariance = [
-                pos_cov, 0, 0, 0, 0, 0,
-                pos_cov, 0, 0, 0, 0,
-                pos_cov, 0, 0, 0,
-                ang_cov, 0, 0,
-                ang_cov, 0,
-                ang_cov
-            ]
-            
+            # Standard MAVLink VISION_POSITION_ESTIMATE message
+            # Parameters: usec, x, y, z, roll, pitch, yaw
+            # Note: covariance and reset_counter are optional in MAVLink v2
+            # and may not be supported by all pymavlink versions
             self._connection.mav.vision_position_estimate_send(
                 int(time.time() * 1e6),  # usec timestamp
                 x, y, z,
-                roll, pitch, yaw,
-                covariance,
-                0  # reset_counter
+                roll, pitch, yaw
             )
             
         except Exception as e:
@@ -260,14 +247,12 @@ class ArduPilotInterface:
             return
         
         try:
-            cov = (1.0 - confidence) * 5.0 + 0.01
-            covariance = [cov, 0, 0, cov, 0, cov]  # diagonal
-            
+            # Standard MAVLink VISION_SPEED_ESTIMATE message
+            # Parameters: usec, vx, vy, vz
+            # Note: covariance and reset_counter are optional in MAVLink v2
             self._connection.mav.vision_speed_estimate_send(
                 int(time.time() * 1e6),
-                vx, vy, vz,
-                covariance,
-                0
+                vx, vy, vz
             )
         except Exception as e:
             logger.error(f"Send vision speed error: {e}")
