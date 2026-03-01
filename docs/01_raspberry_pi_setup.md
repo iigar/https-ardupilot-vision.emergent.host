@@ -153,11 +153,13 @@ sudo apt install -y \
   libopencv-dev \
   git cmake build-essential \
   v4l-utils ffmpeg \
-  libatlas-base-dev libhdf5-dev \
+  liblapack-dev libblas-dev libhdf5-dev \
   libjpeg-dev libpng-dev libtiff-dev \
   libxml2-dev libxslt1-dev \
   screen htop
 ```
+
+> **Примітка для Debian Trixie (13)**: якщо `liblapack-dev` не знайдено, спробуйте `sudo apt install -y libatlas-base-dev` (для старіших версій).
 
 ### Python Virtual Environment
 

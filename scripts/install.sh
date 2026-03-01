@@ -40,10 +40,12 @@ sudo apt install -y -qq \
   libopencv-dev \
   git cmake build-essential \
   v4l-utils ffmpeg \
-  libatlas-base-dev libhdf5-dev \
+  liblapack-dev libblas-dev libhdf5-dev \
   libjpeg-dev libpng-dev libtiff-dev \
   libxml2-dev libxslt1-dev \
   screen htop >> "$LOG_FILE" 2>&1
+# Fallback for older Debian versions
+sudo apt install -y -qq libatlas-base-dev >> "$LOG_FILE" 2>&1 || true
 ok "Системні пакети встановлено"
 
 # --- 3. Python Virtual Environment ---
