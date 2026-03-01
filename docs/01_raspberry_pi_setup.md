@@ -282,13 +282,24 @@ scp -r /шлях/до/firmware/python pi@visual-homing.local:~/visual_homing/
 
 ## 8. Налаштування камери
 
-### Pi Camera (CSI)
+### Pi Camera (CSI) - РЕКОМЕНДОВАНО
 
 ```bash
+# Встановити picamera2 (якщо ще не встановлено)
+sudo apt install -y python3-picamera2
+
 # Перевірити камеру
+rpicam-hello --timeout 2000
+# або для старіших версій:
 libcamera-hello --timeout 2000
 
-# Якщо помилка - перевірити шлейф та /boot/firmware/config.txt
+# Якщо помилка - перевірити:
+# 1. Шлейф камери підключений правильно
+# 2. gpu_mem=128 (або 256 для Pi 5) в /boot/firmware/config.txt
+# 3. Камера увімкнена в raspi-config
+
+# Тест захоплення кадру
+rpicam-still -o test.jpg
 ```
 
 ### Аналогова камера (EasyCap USB)
