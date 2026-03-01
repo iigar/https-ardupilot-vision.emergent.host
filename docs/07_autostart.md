@@ -135,10 +135,34 @@ sudo reboot
 sudo reboot
 
 # Через 30 секунд перевірити:
-# 1. Веб-інтерфейс на http://visual-homing.local:5000
+
+# 1. Веб-інтерфейс:
+#    http://visual-homing.local:5000
+#    або http://<IP_адреса>:5000
+
 # 2. Або SSH:
 ssh pi@visual-homing.local
 sudo systemctl status visual-homing.service
+
+# 3. Переглянути логи:
+journalctl -u visual-homing.service -f
+```
+
+## Ручний запуск (для тестування)
+
+```bash
+# Зупинити сервіс
+sudo systemctl stop visual-homing.service
+
+# Запустити вручну для діагностики
+cd ~/visual_homing
+source ~/venv/bin/activate
+
+# З Pi Camera:
+python main.py --web --camera picamera
+
+# Тестовий режим (без MAVLink):
+python main.py --web --camera picamera --test-mode
 ```
 
 ## Діагностика
