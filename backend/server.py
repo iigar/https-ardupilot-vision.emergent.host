@@ -202,8 +202,10 @@ async def download_firmware_script():
     if not python_dir.exists():
         return {"error": "Firmware directory not found"}
     
-    # Get base URL from environment variable or use default
-    backend_url = os.environ.get('BACKEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://optical-rtl.preview.emergentagent.com'))
+    # Get base URL from environment variable
+    backend_url = os.environ.get('BACKEND_URL', os.environ.get('REACT_APP_BACKEND_URL', ''))
+    if not backend_url:
+        backend_url = 'http://localhost:8001'
     base_url = f"{backend_url}/api"
     
     script_lines = [
