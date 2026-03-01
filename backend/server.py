@@ -614,17 +614,26 @@ async def reset_settings():
 @api_router.get("/routes/{route_id}/export/json")
 async def export_route_json(route_id: str):
     """Export route as JSON file"""
-    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
-    if not route:
-        return {"error": "Route not found"}
-    return route
+    if db is None:
+        return {"error": "Database not available"}
+    try:
+        route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+        if not route:
+            return {"error": "Route not found"}
+        return route
+    except Exception as e:
+        logging.warning(f"Failed to export route JSON: {e}")
+        return {"error": "Database error"}
 
 @api_router.get("/routes/{route_id}/export/kml")
 async def export_route_kml(route_id: str):
     """Export route as KML for Google Earth"""
-    route = await db.routes.find_one({"id": route_id}, {"_id": 0})
-    if not route:
-        return {"error": "Route not found"}
+    if db is None:
+        return {"error": "Database not available"}
+    try:
+        route = await db.routes.find_one({"id": route_id}, {"_id": 0})
+        if not route:
+            return {"error": "Route not found"}
 
     name = route.get("name", "Route")
     points = route.get("points", [])
