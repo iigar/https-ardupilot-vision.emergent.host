@@ -186,6 +186,15 @@ class ArduPilotInterface:
                 
             elif msg_type == 'GPS_RAW_INT':
                 self._vehicle_state.gps_fix = msg.fix_type
+                self._gps_satellites = msg.satellites_visible if hasattr(msg, 'satellites_visible') else 0
+                
+            elif msg_type == 'ATTITUDE':
+                # Store attitude for web interface
+                self._attitude = {
+                    'roll': msg.roll,
+                    'pitch': msg.pitch,
+                    'yaw': msg.yaw
+                }
                 
             elif msg_type == 'BATTERY_STATUS':
                 if msg.voltages[0] != 65535:
