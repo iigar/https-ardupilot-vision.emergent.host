@@ -63,3 +63,10 @@
 - [x] SITL documentation
 - [x] C++ update
 - [x] Unified installer
+- [x] Multi-Pi Support (Zero 2 W, Pi 4B, Pi 5)
+
+## Pending Tasks
+- [ ] Pre-flight Checklist UI
+- [ ] WebSocket real-time telemetry updates
+- [ ] Extended analytics dashboard
+- [ ] Mobile app concept
