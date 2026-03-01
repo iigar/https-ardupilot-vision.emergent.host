@@ -189,7 +189,7 @@ async def download_firmware_script():
         return {"error": "Firmware directory not found"}
     
     # Get base URL from request or use default
-    base_url = "https://optical-autopilot.preview.emergentagent.com/api"
+    base_url = "https://optical-rtl.preview.emergentagent.com/api"
     
     script_lines = [
         "#!/bin/bash",
