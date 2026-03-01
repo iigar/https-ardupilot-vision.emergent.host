@@ -2,7 +2,7 @@
 
 ## Опис
 
-Автозапуск дозволяє Visual Homing стартувати автоматично при включенні Pi Zero 2 W, без потреби підключатися по SSH.
+Автозапуск дозволяє Visual Homing стартувати автоматично при включенні Pi, без потреби підключатися по SSH.
 
 ## Метод 1: systemd (рекомендовано)
 
@@ -25,7 +25,7 @@ Type=simple
 User=pi
 WorkingDirectory=/home/pi/visual_homing
 Environment=PATH=/home/pi/venv/bin:/usr/local/bin:/usr/bin:/bin
-ExecStart=/home/pi/venv/bin/python main.py --autostart
+ExecStart=/home/pi/venv/bin/python main.py --web --camera picamera
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
@@ -37,6 +37,8 @@ ExecStartPre=/bin/sleep 10
 [Install]
 WantedBy=multi-user.target
 ```
+
+> **Примітка:** Якщо використовуєте USB камеру (EasyCap), змініть `--camera picamera` на `--camera usb`
 
 ### Активація
 
