@@ -158,6 +158,93 @@ async def download_script(script_name: str):
     )
 
 
+@api_router.get("/firmware/download/zip")
+async def download_firmware_zip():
+    """Download all firmware Python files as ZIP archive"""
+    python_dir = FIRMWARE_DIR / 'python'
+    if not python_dir.exists():
+        return {"error": "Firmware directory not found"}
+    
+    # Create ZIP in memory
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for file_path in python_dir.rglob('*'):
+            if file_path.is_file():
+                arcname = file_path.relative_to(python_dir)
+                zf.write(file_path, arcname)
+    
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=visual_homing_firmware.zip"}
+    )
+
+
+@api_router.get("/firmware/download/script")
+async def download_firmware_script():
+    """Generate a shell script to download all firmware files"""
+    python_dir = FIRMWARE_DIR / 'python'
+    if not python_dir.exists():
+        return {"error": "Firmware directory not found"}
+    
+    # Get base URL from request or use default
+    base_url = "https://optical-autopilot.preview.emergentagent.com/api"
+    
+    script_lines = [
+        "#!/bin/bash",
+        "# Download Visual Homing firmware files",
+        "# Run this script in ~/visual_homing directory",
+        "",
+        "set -e",
+        "BASE_URL=\"" + base_url + "\"",
+        "DEST_DIR=\"${1:-.}\"",
+        "",
+        "echo 'Downloading Visual Homing firmware...'",
+        "cd \"$DEST_DIR\"",
+        "",
+    ]
+    
+    # Collect all files
+    for file_path in sorted(python_dir.rglob('*')):
+        if file_path.is_file():
+            rel_path = file_path.relative_to(python_dir)
+            dir_part = rel_path.parent
+            
+            if str(dir_part) != '.':
+                script_lines.append(f"mkdir -p \"{dir_part}\"")
+            
+            api_path = f"python/{rel_path}"
+            script_lines.append(
+                f"curl -s \"$BASE_URL/firmware/file/{api_path}\" | python3 -c \"import sys,json; print(json.load(sys.stdin)['content'])\" > \"{rel_path}\""
+            )
+    
+    # Add config files
+    config_dir = FIRMWARE_DIR / 'config'
+    if config_dir.exists():
+        script_lines.append("")
+        script_lines.append("# Config files")
+        script_lines.append("mkdir -p config")
+        for file_path in sorted(config_dir.glob('*')):
+            if file_path.is_file():
+                rel_path = f"config/{file_path.name}"
+                api_path = f"config/{file_path.name}"
+                script_lines.append(
+                    f"curl -s \"$BASE_URL/firmware/file/{api_path}\" | python3 -c \"import sys,json; print(json.load(sys.stdin)['content'])\" > \"{rel_path}\""
+                )
+    
+    script_lines.extend([
+        "",
+        "echo ''",
+        "echo 'Download complete!'",
+        "echo 'Files saved to:' \"$DEST_DIR\"",
+        "ls -la",
+    ])
+    
+    script_content = "\n".join(script_lines)
+    return PlainTextResponse(content=script_content, media_type="text/x-shellscript")
+
+
 # Route/Flight data endpoints for 3D visualization
 class RoutePoint(BaseModel):
     x: float
