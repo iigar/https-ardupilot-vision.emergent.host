@@ -433,6 +433,48 @@ async def get_smart_rtl_config():
     }
 
 
+# ===== Return (Smart RTL) Control =====
+class ReturnCommand(BaseModel):
+    """Command to start/stop return flight"""
+    action: str = "start"  # start, stop, pause
+
+@api_router.post("/return/start")
+async def start_return():
+    """Start Smart RTL - return to home along recorded route"""
+    global _smart_rtl_status
+    _smart_rtl_status = SmartRTLStatus(
+        active=True,
+        phase="high_alt",
+        current_altitude=_current_position.z,
+        home_distance=100.0,  # Will be calculated from actual position
+        return_progress=0.0,
+        nav_source="imu_baro",
+        target_altitude=50.0
+    )
+    await ws_manager.broadcast({
+        "type": "rtl_started",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "status": _smart_rtl_status.model_dump()
+    })
+    return {"success": True, "message": "Smart RTL started", "status": _smart_rtl_status.model_dump()}
+
+@api_router.post("/return/stop")
+async def stop_return():
+    """Stop Smart RTL"""
+    global _smart_rtl_status
+    _smart_rtl_status = SmartRTLStatus(active=False, phase="idle")
+    await ws_manager.broadcast({
+        "type": "rtl_stopped",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    return {"success": True, "message": "Smart RTL stopped"}
+
+@api_router.get("/return/status")
+async def get_return_status():
+    """Get current return flight status"""
+    return _smart_rtl_status
+
+
 # ===== Settings CRUD =====
 class SystemSettings(BaseModel):
     camera_type: str = "usb_capture"
