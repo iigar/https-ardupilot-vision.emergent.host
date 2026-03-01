@@ -34,6 +34,13 @@ app = FastAPI(title="Visual Homing Documentation API")
 api_router = APIRouter(prefix="/api")
 
 
+# Health check endpoint for Kubernetes (must be at root level, not under /api)
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes liveness/readiness probes"""
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
 # Define Models
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -188,8 +195,9 @@ async def download_firmware_script():
     if not python_dir.exists():
         return {"error": "Firmware directory not found"}
     
-    # Get base URL from request or use default
-    base_url = "https://optical-rtl.preview.emergentagent.com/api"
+    # Get base URL from environment variable or use default
+    backend_url = os.environ.get('BACKEND_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://optical-rtl.preview.emergentagent.com'))
+    base_url = f"{backend_url}/api"
     
     script_lines = [
         "#!/bin/bash",
