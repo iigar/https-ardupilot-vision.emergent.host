@@ -3,15 +3,24 @@
 ## Оновлено: 28.02.2026
 
 ## Опис
-Прошивка для Raspberry Pi Zero 2 W для оптичної навігації дрона на базі ArduPilot.
+Прошивка для Raspberry Pi (Zero 2 W, Pi 4B, Pi 5) для оптичної навігації дрона на базі ArduPilot.
 
-## Обладнання
-- Pi Zero 2 W, Matek H743-Slim V3, MATEK 3901-L0X, TF-Luna LiDAR
-- Caddx Thermal 256 / Pi Camera, EasyCap USB Capture
+## Підтримуване обладнання
+- **Raspberry Pi:** Zero 2 W (512MB), Pi 4B (2-8GB), Pi 5 (4-8GB)
+- **Політний контролер:** Matek H743-Slim V3
+- **Сенсори:** MATEK 3901-L0X (Optical Flow), TF-Luna LiDAR
+- **Камери:** Caddx Thermal 256, Pi Camera v2/v3, аналогова через EasyCap
 
 ---
 
 ## Реліз-ноти
+
+### v2.2.1 (28.02.2026) — Multi-Pi Support
+- **Multi-Pi Support:** Інсталятор тепер підтримує Raspberry Pi Zero 2 W, Pi 4B та Pi 5
+- Автоматичне визначення моделі Pi під час інсталяції
+- Специфічні налаштування UART для кожної моделі (Pi 5 використовує uart2-pi5, uart3-pi5)
+- Оптимізація swap та gpu_mem для кожної моделі
+- Оновлена документація з таблицями порівняння продуктивності
 
 ### v2.2 (28.02.2026) — Full Feature Release
 - **Settings page**: конфігурація камери, MAVLink, сенсорів, Smart RTL через UI
