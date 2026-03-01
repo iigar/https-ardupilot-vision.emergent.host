@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
-# Visual Homing System - Unified Installer
-# Один скрипт для встановлення всього на Raspberry Pi Zero 2 W
+# Visual Homing System - Unified Installer v2.2
+# Підтримка: Raspberry Pi Zero 2 W, Pi 4B, Pi 5
 # =============================================================================
 set -e
 
@@ -20,11 +20,32 @@ ok() { echo -e "${GREEN}[OK]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 err() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+# --- Detect Raspberry Pi Model ---
+detect_pi_model() {
+    local model=$(cat /proc/device-tree/model 2>/dev/null | tr -d '\0')
+    if [[ "$model" == *"Raspberry Pi 5"* ]]; then
+        echo "pi5"
+    elif [[ "$model" == *"Raspberry Pi 4"* ]]; then
+        echo "pi4"
+    elif [[ "$model" == *"Raspberry Pi Zero 2"* ]]; then
+        echo "pizero2"
+    elif [[ "$model" == *"Raspberry Pi Zero"* ]]; then
+        echo "pizero"
+    else
+        echo "unknown"
+    fi
+}
+
+PI_MODEL=$(detect_pi_model)
+
 echo ""
 echo "=============================================="
-echo "  Visual Homing System - Installer v2.1"
-echo "  Raspberry Pi Zero 2 W"
+echo "  Visual Homing System - Installer v2.2"
+echo "  Raspberry Pi Zero 2 W / Pi 4B / Pi 5"
 echo "=============================================="
+echo ""
+echo "Виявлено модель: $(cat /proc/device-tree/model 2>/dev/null | tr -d '\0' || echo 'Unknown')"
+echo "Тип: $PI_MODEL"
 echo ""
 
 # --- 1. System Update ---
@@ -34,18 +55,27 @@ ok "Систему оновлено"
 
 # --- 2. System Dependencies ---
 log "Встановлення системних пакетів..."
-sudo apt install -y -qq \
-  python3-pip python3-venv python3-dev \
-  python3-opencv python3-numpy \
-  libopencv-dev \
-  git cmake build-essential \
-  v4l-utils ffmpeg \
-  liblapack-dev libblas-dev libhdf5-dev \
-  libjpeg-dev libpng-dev libtiff-dev \
-  libxml2-dev libxslt1-dev \
-  screen htop >> "$LOG_FILE" 2>&1
-# Fallback for older Debian versions
-sudo apt install -y -qq libatlas-base-dev >> "$LOG_FILE" 2>&1 || true
+
+# Core packages (all Pi models)
+CORE_PACKAGES="python3-pip python3-venv python3-dev python3-opencv python3-numpy libopencv-dev git cmake build-essential v4l-utils ffmpeg libjpeg-dev libpng-dev libtiff-dev libxml2-dev libxslt1-dev screen htop"
+
+# Math libraries - try modern first, fallback to legacy
+MATH_PACKAGES=""
+if apt-cache show liblapack-dev > /dev/null 2>&1; then
+    MATH_PACKAGES="liblapack-dev libblas-dev libhdf5-dev"
+elif apt-cache show libatlas-base-dev > /dev/null 2>&1; then
+    MATH_PACKAGES="libatlas-base-dev libhdf5-dev"
+else
+    warn "Математичні бібліотеки не знайдено, продовжуємо без них"
+fi
+
+# Pi 5 specific packages
+PI5_PACKAGES=""
+if [ "$PI_MODEL" = "pi5" ]; then
+    PI5_PACKAGES="rpicam-apps libcamera-dev"
+fi
+
+sudo apt install -y -qq $CORE_PACKAGES $MATH_PACKAGES $PI5_PACKAGES >> "$LOG_FILE" 2>&1
 ok "Системні пакети встановлено"
 
 # --- 3. Python Virtual Environment ---
@@ -90,9 +120,25 @@ fi
 
 # Check if UART already configured
 if ! grep -q "enable_uart=1" "$CONFIG_FILE" 2>/dev/null; then
-  sudo tee -a "$CONFIG_FILE" > /dev/null << 'UARTEOF'
+  # Model-specific UART configuration
+  if [ "$PI_MODEL" = "pi5" ]; then
+    sudo tee -a "$CONFIG_FILE" > /dev/null << 'UARTEOF'
 
-# === Visual Homing UART Configuration ===
+# === Visual Homing UART Configuration (Pi 5) ===
+enable_uart=1
+# Pi 5 використовує PL011 UART
+dtparam=uart0=on
+# Додаткові UART на GPIO
+dtoverlay=uart2-pi5
+dtoverlay=uart3-pi5
+# Камера (Pi 5 libcamera)
+gpu_mem=256
+dtparam=i2c_arm=on
+UARTEOF
+  else
+    sudo tee -a "$CONFIG_FILE" > /dev/null << 'UARTEOF'
+
+# === Visual Homing UART Configuration (Pi Zero 2 W / Pi 4B) ===
 enable_uart=1
 dtoverlay=disable-bt
 dtoverlay=uart2
@@ -101,7 +147,8 @@ gpu_mem=128
 start_x=1
 dtparam=i2c_arm=on
 UARTEOF
-  ok "UART налаштовано в $CONFIG_FILE"
+  fi
+  ok "UART налаштовано в $CONFIG_FILE (модель: $PI_MODEL)"
 else
   ok "UART вже налаштовано"
 fi
@@ -113,14 +160,27 @@ ok "Дозволи налаштовано (dialout, video, i2c)"
 
 # --- 9. Swap Configuration ---
 log "Налаштування swap..."
-if [ "$(cat /etc/dphys-swapfile | grep 'CONF_SWAPSIZE=' | cut -d'=' -f2)" -lt 1024 ] 2>/dev/null; then
-  sudo dphys-swapfile swapoff
-  sudo sed -i 's/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/' /etc/dphys-swapfile
-  sudo dphys-swapfile setup >> "$LOG_FILE" 2>&1
-  sudo dphys-swapfile swapon
-  ok "Swap збільшено до 1GB"
+
+# Swap size based on Pi model (Pi 4/5 have more RAM, need less swap)
+if [ "$PI_MODEL" = "pi5" ] || [ "$PI_MODEL" = "pi4" ]; then
+    SWAP_SIZE=512
 else
-  ok "Swap вже налаштовано"
+    SWAP_SIZE=1024
+fi
+
+if [ -f /etc/dphys-swapfile ]; then
+    CURRENT_SWAP=$(cat /etc/dphys-swapfile | grep 'CONF_SWAPSIZE=' | cut -d'=' -f2 || echo "0")
+    if [ "$CURRENT_SWAP" -lt "$SWAP_SIZE" ] 2>/dev/null; then
+        sudo dphys-swapfile swapoff 2>/dev/null || true
+        sudo sed -i "s/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=$SWAP_SIZE/" /etc/dphys-swapfile
+        sudo dphys-swapfile setup >> "$LOG_FILE" 2>&1
+        sudo dphys-swapfile swapon
+        ok "Swap налаштовано: ${SWAP_SIZE}MB"
+    else
+        ok "Swap вже налаштовано: ${CURRENT_SWAP}MB"
+    fi
+else
+    warn "dphys-swapfile не знайдено, пропускаємо налаштування swap"
 fi
 
 # --- 10. Disable Unnecessary Services ---
@@ -194,13 +254,39 @@ else
 fi
 
 echo ""
-echo "Наступні кроки:"
+echo "=============================================="
+echo "  Наступні кроки"
+echo "=============================================="
+echo ""
 echo "  1. sudo reboot   (для застосування UART)"
 echo "  2. Підключити сенсори (MATEK 3901-L0X, TF-Luna)"
 echo "  3. Підключити камеру"
 echo "  4. Завантажити параметри ArduPilot: $INSTALL_DIR/config/visual_homing.param"
 echo "  5. Запустити: sudo systemctl start visual-homing"
 echo ""
-echo "Логи: journalctl -u visual-homing -f"
+echo "Корисні команди:"
+echo "  Статус:  sudo systemctl status visual-homing"
+echo "  Логи:    journalctl -u visual-homing -f"
+echo "  Стоп:    sudo systemctl stop visual-homing"
+echo "  Рестарт: sudo systemctl restart visual-homing"
+echo ""
 echo "Повний лог встановлення: $LOG_FILE"
 echo ""
+
+# Model-specific notes
+if [ "$PI_MODEL" = "pi5" ]; then
+    echo "Примітки для Raspberry Pi 5:"
+    echo "  - Використовуйте 'rpicam-hello' замість 'libcamera-hello' для тесту камери"
+    echo "  - UART доступні через /dev/ttyAMA0, /dev/ttyAMA2, /dev/ttyAMA3"
+    echo ""
+elif [ "$PI_MODEL" = "pi4" ]; then
+    echo "Примітки для Raspberry Pi 4B:"
+    echo "  - Більше RAM дозволяє швидшу обробку зображень"
+    echo "  - Рекомендовано активне охолодження при тривалій роботі"
+    echo ""
+elif [ "$PI_MODEL" = "pizero2" ]; then
+    echo "Примітки для Raspberry Pi Zero 2 W:"
+    echo "  - Обмежена RAM, використовуйте opencv-headless"
+    echo "  - Рекомендовано пасивне охолодження"
+    echo ""
+fi
