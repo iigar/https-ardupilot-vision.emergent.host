@@ -20,9 +20,12 @@ import io
 ROOT_DIR = Path(__file__).parent
 DOCS_DIR = ROOT_DIR.parent / 'docs'
 FIRMWARE_DIR = ROOT_DIR.parent / 'firmware'
-load_dotenv(ROOT_DIR / '.env')
+
+# Load .env file but DON'T override existing environment variables (production priority)
+load_dotenv(ROOT_DIR / '.env', override=False)
 
 # MongoDB connection - lazy initialization for production compatibility
+# In production, MONGO_URL is set by Emergent platform to Atlas URL
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'visual_homing')
 
