@@ -569,27 +569,45 @@ class SystemSettings(BaseModel):
 @api_router.get("/settings")
 async def get_settings():
     """Get system settings from DB or return defaults"""
-    doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
-    if doc:
-        return doc
-    return SystemSettings().model_dump()
+    if db is None:
+        return SystemSettings().model_dump()
+    try:
+        doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
+        if doc:
+            return doc
+        return SystemSettings().model_dump()
+    except Exception as e:
+        logging.warning(f"Failed to get settings: {e}")
+        return SystemSettings().model_dump()
 
 @api_router.post("/settings")
 async def save_settings(settings: SystemSettings):
     """Save system settings to DB"""
-    doc = settings.model_dump()
-    await db.settings.update_one(
-        {"_id": "system"},
-        {"$set": doc},
-        upsert=True
-    )
-    return {"success": True}
+    if db is None:
+        return {"success": False, "error": "Database not available"}
+    try:
+        doc = settings.model_dump()
+        await db.settings.update_one(
+            {"_id": "system"},
+            {"$set": doc},
+            upsert=True
+        )
+        return {"success": True}
+    except Exception as e:
+        logging.warning(f"Failed to save settings: {e}")
+        return {"success": False, "error": "Database error"}
 
 @api_router.post("/settings/reset")
 async def reset_settings():
     """Reset settings to defaults"""
-    await db.settings.delete_one({"_id": "system"})
-    return SystemSettings().model_dump()
+    if db is None:
+        return SystemSettings().model_dump()
+    try:
+        await db.settings.delete_one({"_id": "system"})
+        return SystemSettings().model_dump()
+    except Exception as e:
+        logging.warning(f"Failed to reset settings: {e}")
+        return SystemSettings().model_dump()
 
 
 # ===== Route Export =====
