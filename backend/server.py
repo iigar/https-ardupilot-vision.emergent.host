@@ -34,10 +34,17 @@ app = FastAPI(title="Visual Homing Documentation API")
 api_router = APIRouter(prefix="/api")
 
 
-# Health check endpoint for Kubernetes (must be at root level, not under /api)
-@app.get("/health")
+# Health check endpoint for Kubernetes (at /api/health for proper routing)
+@api_router.get("/health")
 async def health_check():
     """Health check endpoint for Kubernetes liveness/readiness probes"""
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
+# Also add at root level for direct health checks
+@app.get("/health")
+async def root_health_check():
+    """Root health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
