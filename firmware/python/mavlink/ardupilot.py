@@ -63,6 +63,10 @@ class ArduPilotInterface:
         self._vehicle_state = VehicleState()
         self._state_lock = threading.Lock()
         self._callbacks: Dict[str, list] = {}
+        
+        # Store attitude separately for web interface
+        self._attitude = {'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0}
+        self._gps_satellites = 0
     
     def connect(self, timeout: float = 10.0) -> bool:
         """
