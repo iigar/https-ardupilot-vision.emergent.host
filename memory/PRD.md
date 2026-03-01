@@ -1,6 +1,6 @@
 # Visual Homing System - PRD
 
-## Оновлено: 28.02.2026
+## Оновлено: 01.03.2026
 
 ## Опис
 Прошивка для Raspberry Pi (Zero 2 W, Pi 4B, Pi 5) для оптичної навігації дрона на базі ArduPilot.
@@ -14,6 +14,11 @@
 ---
 
 ## Реліз-ноти
+
+### v2.2.2 (01.03.2026) — MAVLink & API Fixes
+- **MAVLink Fix:** Виправлено помилку `TypeError` у функціях `vision_position_estimate_send` та `vision_speed_estimate_send` - видалено зайві аргументи (covariance, reset_counter) для сумісності з pymavlink
+- **API Fix:** Додано відсутні ендпоінти `/api/return/start`, `/api/return/stop`, `/api/return/status` для керування Smart RTL через веб-інтерфейс
+- **WebSocket:** RTL події тепер транслюються через WebSocket (`rtl_started`, `rtl_stopped`)
 
 ### v2.2.1 (28.02.2026) — Multi-Pi Support
 - **Multi-Pi Support:** Інсталятор тепер підтримує Raspberry Pi Zero 2 W, Pi 4B та Pi 5
@@ -67,6 +72,10 @@
 
 ## Pending Tasks
 - [ ] Pre-flight Checklist UI
-- [ ] WebSocket real-time telemetry updates
+- [ ] WebSocket real-time telemetry updates (infrastructure ready)
 - [ ] Extended analytics dashboard
 - [ ] Mobile app concept
+
+## Виправлені баги (v2.2.2)
+- [x] MAVLink TypeError: `vision_position_estimate_send() takes from 8 to 9 positional arguments but 10 were given`
+- [x] HTTP 415 error on `/api/return/start` - ендпоінт не існував
