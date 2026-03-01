@@ -633,6 +633,17 @@ def status_broadcast_loop():
     while True:
         if _system:
             try:
+                # Get attitude from MAVLink if available
+                attitude = {'roll': 0, 'pitch': 0, 'yaw': 0}
+                if hasattr(_system, 'mavlink') and _system.mavlink.is_connected:
+                    if hasattr(_system.mavlink, '_attitude'):
+                        att = _system.mavlink._attitude
+                        attitude = {
+                            'roll': att.get('roll', 0),
+                            'pitch': att.get('pitch', 0),
+                            'yaw': att.get('yaw', 0)
+                        }
+                
                 status = {
                     'state': _system.state.value,
                     'keyframes': _system.route_recorder.keyframe_count,
@@ -643,7 +654,9 @@ def status_broadcast_loop():
                         'z': _system._current_pose.z,
                         'yaw': _system._current_pose.yaw
                     },
+                    'attitude': attitude,
                     'mavlink_connected': _system.mavlink.is_connected,
+                    'gps_fix': getattr(_system.mavlink, '_gps_satellites', 0) if _system.mavlink.is_connected else 0,
                     'progress': _system.route_follower.progress if _system.route_follower.is_active else 0,
                     'features': _system.vo._prev_features.count if _system.vo._prev_features else 0
                 }
