@@ -130,6 +130,32 @@ async def get_firmware_file(filepath: str):
     return {"path": filepath, "content": content}
 
 
+@api_router.get("/scripts/download/{script_name}")
+async def download_script(script_name: str):
+    """Download installation script as raw file"""
+    # Check in multiple locations
+    script_paths = [
+        ROOT_DIR.parent / 'scripts' / script_name,
+        FIRMWARE_DIR / 'scripts' / script_name,
+    ]
+    
+    script_path = None
+    for path in script_paths:
+        if path.exists():
+            script_path = path
+            break
+    
+    if not script_path:
+        return {"error": f"Script '{script_name}' not found"}
+    
+    return FileResponse(
+        path=str(script_path),
+        media_type="text/x-shellscript",
+        filename=script_name,
+        headers={"Content-Disposition": f"attachment; filename={script_name}"}
+    )
+
+
 # Route/Flight data endpoints for 3D visualization
 class RoutePoint(BaseModel):
     x: float
