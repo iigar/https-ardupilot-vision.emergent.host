@@ -7,7 +7,12 @@ import logging
 import signal
 import sys
 import time
+import os
+from pathlib import Path
 from threading import Event
+
+# Add current directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
 
 from config import Config, CameraType, SystemState
 from camera import USBCapture, PiCamera
@@ -16,12 +21,14 @@ from navigation import RouteRecorder, RouteFollower
 from mavlink import ArduPilotInterface
 
 # Configure logging
+log_dir = Path('/home/pi/visual_homing/logs')
+log_dir.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('/home/pi/visual_homing/logs/visual_homing.log')
+        logging.FileHandler(log_dir / 'visual_homing.log')
     ]
 )
 logger = logging.getLogger('visual_homing')
