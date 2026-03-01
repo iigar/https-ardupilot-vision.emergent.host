@@ -681,9 +681,16 @@ async def export_route_kml(route_id: str):
 @api_router.get("/stream/status")
 async def stream_status():
     """Check video stream availability and return configured URL"""
-    doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
-    stream_url = doc.get("stream_url", "http://192.168.213.234:5000/") if doc else "http://192.168.213.234:5000/"
-    stream_enabled = doc.get("stream_enabled", True) if doc else True
+    stream_url = "http://192.168.213.234:5000/"
+    stream_enabled = True
+    if db is not None:
+        try:
+            doc = await db.settings.find_one({"_id": "system"}, {"_id": 0})
+            if doc:
+                stream_url = doc.get("stream_url", stream_url)
+                stream_enabled = doc.get("stream_enabled", stream_enabled)
+        except Exception as e:
+            logging.warning(f"Failed to get stream status from DB: {e}")
     return {
         "available": stream_enabled,
         "url": stream_url,
