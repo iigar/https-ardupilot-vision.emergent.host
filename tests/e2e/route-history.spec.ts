@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { waitForAppReady, navigateToTab, waitFor3DCanvas } from '../fixtures/helpers';
 
 test.describe('Visual Homing - Route History & Save', () => {
-  const baseUrl = process.env.BASE_URL || 'https://optical-flow-drone.preview.emergentagent.com';
+  const baseUrl = process.env.BASE_URL || 'https://optical-autopilot.preview.emergentagent.com';
   let createdRouteId: string | null = null;
 
   test.afterEach(async ({ request }) => {
