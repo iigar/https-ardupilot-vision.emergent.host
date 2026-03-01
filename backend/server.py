@@ -635,19 +635,19 @@ async def export_route_kml(route_id: str):
         if not route:
             return {"error": "Route not found"}
 
-    name = route.get("name", "Route")
-    points = route.get("points", [])
+        name = route.get("name", "Route")
+        points = route.get("points", [])
 
-    # Build KML with coordinates
-    coords_str = ""
-    for p in points:
-        # KML uses lon,lat,alt — we use x as lon offset, y as lat offset, z as alt
-        lon = 30.5234 + p.get("x", 0) * 0.00001  # Kyiv longitude + offset
-        lat = 50.4501 + p.get("y", 0) * 0.00001   # Kyiv latitude + offset
-        alt = p.get("z", 0)
-        coords_str += f"          {lon},{lat},{alt}\n"
+        # Build KML with coordinates
+        coords_str = ""
+        for p in points:
+            # KML uses lon,lat,alt — we use x as lon offset, y as lat offset, z as alt
+            lon = 30.5234 + p.get("x", 0) * 0.00001  # Kyiv longitude + offset
+            lat = 50.4501 + p.get("y", 0) * 0.00001   # Kyiv latitude + offset
+            alt = p.get("z", 0)
+            coords_str += f"          {lon},{lat},{alt}\n"
 
-    kml = f"""<?xml version="1.0" encoding="UTF-8"?>
+        kml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>{name}</name>
@@ -670,11 +670,14 @@ async def export_route_kml(route_id: str):
   </Document>
 </kml>"""
 
-    return StreamingResponse(
-        iter([kml]),
-        media_type="application/vnd.google-earth.kml+xml",
-        headers={"Content-Disposition": f"attachment; filename={name}.kml"}
-    )
+        return StreamingResponse(
+            iter([kml]),
+            media_type="application/vnd.google-earth.kml+xml",
+            headers={"Content-Disposition": f"attachment; filename={name}.kml"}
+        )
+    except Exception as e:
+        logging.warning(f"Failed to export route KML: {e}")
+        return {"error": "Database error"}
 
 
 # ===== Video Stream =====
