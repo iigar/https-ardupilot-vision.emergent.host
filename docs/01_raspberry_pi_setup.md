@@ -188,7 +188,8 @@ ls -la /dev/serial*
 
 ```bash
 # Завантажити та запустити скрипт
-wget https://your-repo.com/scripts/install.sh
+cd ~
+wget https://optical-rtl.emergent.host/api/scripts/download/install.sh -O install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -197,6 +198,7 @@ chmod +x install.sh
 - Визначить модель вашого Raspberry Pi
 - Встановить відповідні залежності
 - Налаштує UART, swap, сервіси
+- Завантажить прошивку
 - Перевірить установку
 
 ### Ручне встановлення
@@ -259,21 +261,23 @@ python3 -c "import flask; print(f'Flask: {flask.__version__}')"
 
 ## 7. Клонування проекту
 
+### Завантаження прошивки (рекомендовано)
+
 ```bash
 cd ~
-git clone <url_вашого_репозиторію> visual_homing
+
+# Завантажити ZIP архів з прошивкою
+wget https://optical-rtl.emergent.host/api/firmware/download/zip -O firmware.zip
+unzip firmware.zip -d visual_homing
 cd visual_homing
 ```
 
-### Або завантажити та розпакувати
+### Або скопіювати з комп'ютера
 
 ```bash
 cd ~
 # Скопіювати файли з комп'ютера
 scp -r /шлях/до/firmware/python pi@visual-homing.local:~/visual_homing/
-
-# Або використати установочний скрипт
-wget <url>/install.sh && chmod +x install.sh && ./install.sh
 ```
 
 ## 8. Налаштування камери
