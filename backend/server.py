@@ -22,13 +22,36 @@ DOCS_DIR = ROOT_DIR.parent / 'docs'
 FIRMWARE_DIR = ROOT_DIR.parent / 'firmware'
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection - lazy initialization for production compatibility
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'visual_homing')
+
+client = None
+db = None
+
+def get_db():
+    """Get MongoDB database instance with lazy initialization"""
+    global client, db
+    if client is None:
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[db_name]
+    return db
 
 # Create the main app without a prefix
 app = FastAPI(title="Visual Homing Documentation API")
+
+@app.on_event("startup")
+async def startup_db_client():
+    """Initialize MongoDB connection on startup"""
+    global client, db
+    try:
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[db_name]
+        # Test connection
+        await client.admin.command('ping')
+        logging.info(f"Connected to MongoDB: {db_name}")
+    except Exception as e:
+        logging.warning(f"MongoDB connection warning: {e}. Some features may be unavailable.")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
