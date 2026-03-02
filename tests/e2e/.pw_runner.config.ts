@@ -11,7 +11,7 @@ export default defineConfig({
     ['json', { outputFile: '/root/.emergent/automation_output/20260228_132108/results.json' }],
   ],
   use: {
-    baseURL: 'https://optical-rtl.preview.emergentagent.com',
+    baseURL: 'https://drone-return-home.preview.emergentagent.com',
     screenshot: 'only-on-failure',
     trace: 'off',
     headless: true,

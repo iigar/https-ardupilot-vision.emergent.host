@@ -257,7 +257,7 @@ pip install pymavlink pyserial flask flask-cors flask-socketio
 
 ```bash
 cd ~
-wget https://optical-rtl.preview.emergentagent.com/api/firmware/download/zip -O firmware.zip
+wget https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip -O firmware.zip
 unzip -o firmware.zip -d visual_homing
 ```
 
@@ -561,8 +561,7 @@ sudo fuser -k 5000/tcp
 
 ## 📞 Підтримка
 
-- **GitHub:** https://github.com/iigar/https-ardupilot-vision.emergent.host
-- **Документація:** https://optical-rtl.preview.emergentagent.com
+- **Документація:** https://drone-return-home.preview.emergentagent.com
 
 ---
 

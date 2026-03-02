@@ -189,7 +189,7 @@ ls -la /dev/serial*
 ```bash
 # Завантажити та запустити скрипт
 cd ~
-wget https://optical-rtl.emergent.host/api/scripts/download/install.sh -O install.sh
+wget https://drone-return-home.preview.emergentagent.com/api/scripts/download/install.sh -O install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -267,7 +267,7 @@ python3 -c "import flask; print(f'Flask: {flask.__version__}')"
 cd ~
 
 # Завантажити ZIP архів з прошивкою
-wget https://optical-rtl.emergent.host/api/firmware/download/zip -O firmware.zip
+wget https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip -O firmware.zip
 unzip firmware.zip -d visual_homing
 cd visual_homing
 ```

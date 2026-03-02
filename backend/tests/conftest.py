@@ -3,7 +3,7 @@ import requests
 import os
 
 # Get backend URL from environment or use public preview URL
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://optical-rtl.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://drone-return-home.preview.emergentagent.com').rstrip('/')
 
 @pytest.fixture
 def api_client():

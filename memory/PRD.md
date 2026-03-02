@@ -15,6 +15,11 @@
 
 ## Реліз-ноти
 
+### v2.2.3 (02.03.2026) — URL Consistency Fix
+- **URL Fix:** Виправлено всі посилання в документації з `emergent.host` на `preview.emergentagent.com`
+- **Affected files:** `docs/01_raspberry_pi_setup.md`, `docs/README.md`, `docs/00_QUICK_START.md`, `memory/PRD.md`, `scripts/setup_local_interface.sh`
+- **API Verified:** Ендпоінти `/api/scripts/download/install.sh` та `/api/firmware/download/zip` працюють коректно
+
 ### v2.2.2 (01.03.2026) — MAVLink & API Fixes
 - **MAVLink Fix:** Виправлено помилку `TypeError` у функціях `vision_position_estimate_send` та `vision_speed_estimate_send` - видалено зайві аргументи (covariance, reset_counter) для сумісності з pymavlink
 - **API Fix:** Додано відсутні ендпоінти `/api/return/start`, `/api/return/stop`, `/api/return/status` для керування Smart RTL через веб-інтерфейс
@@ -93,11 +98,11 @@
   - mDNS discovery для Pi
 - **Tech Stack:** Kotlin, Jetpack Compose, Material 3, Retrofit, Room
 
-## Production URLs
-- **Web UI:** https://optical-rtl.emergent.host
-- **API:** https://optical-rtl.emergent.host/api
-- **Firmware Download:** https://optical-rtl.emergent.host/api/firmware/download/zip
-- **Install Script:** https://optical-rtl.emergent.host/api/scripts/download/install.sh
+## Preview URLs (актуальні)
+- **Web UI:** https://drone-return-home.preview.emergentagent.com
+- **API:** https://drone-return-home.preview.emergentagent.com/api
+- **Firmware Download:** https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip
+- **Install Script:** https://drone-return-home.preview.emergentagent.com/api/scripts/download/install.sh
 
 ## Команди запуску на Pi
 ```bash

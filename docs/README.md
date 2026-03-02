@@ -54,16 +54,15 @@
 ```bash
 # На Raspberry Pi (через SSH):
 cd ~
-wget https://optical-rtl.emergent.host/api/scripts/download/install.sh -O install.sh
-chmod +x install.sh
-./install.sh
+wget https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip -O firmware.zip
+unzip -o firmware.zip -d visual_homing
 ```
 
 ### Варіант 2: Завантаження прошивки ZIP
 
 ```bash
 cd ~
-wget https://optical-rtl.emergent.host/api/firmware/download/zip -O firmware.zip
+wget https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip -O firmware.zip
 unzip firmware.zip -d visual_homing
 cd visual_homing
 ```
@@ -92,10 +91,10 @@ http://visual-homing.local:5000
 http://<IP_адреса_Pi>:5000
 ```
 
-## Production URL
+## Preview URL (актуальний)
 
-- **Веб-інтерфейс:** https://optical-rtl.emergent.host
-- **API:** https://optical-rtl.emergent.host/api
+- **Веб-інтерфейс:** https://drone-return-home.preview.emergentagent.com
+- **API:** https://drone-return-home.preview.emergentagent.com/api
 
 ## Ліцензія
 

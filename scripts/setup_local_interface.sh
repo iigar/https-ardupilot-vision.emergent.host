@@ -46,12 +46,16 @@ cd "$INTERFACE_DIR"
 if [ ! -f "package.json" ]; then
     echo "📥 Downloading interface..."
     
-    # Clone from GitHub
-    git clone --depth 1 https://github.com/iigar/https-ardupilot-vision.emergent.host temp_repo
+    # Download from preview URL
+    wget https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip -O visual_homing.zip
+    unzip -o visual_homing.zip
     
-    # Copy frontend
-    cp -r temp_repo/frontend/* .
-    rm -rf temp_repo
+    # Copy frontend if exists
+    if [ -d "frontend" ]; then
+        cp -r frontend/* .
+        rm -rf frontend
+    fi
+    rm -f visual_homing.zip
     
     echo "✓ Interface downloaded"
 fi
