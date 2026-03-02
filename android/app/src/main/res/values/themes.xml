@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.VisualHoming" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#00D4FF</item>
+        <item name="android:colorPrimaryDark">#00A8CC</item>
+        <item name="android:colorAccent">#00D4FF</item>
+        <item name="android:windowBackground">#0A0F14</item>
+        <item name="android:statusBarColor">#0A0F14</item>
+        <item name="android:navigationBarColor">#141A22</item>
+    </style>
+</resources>
