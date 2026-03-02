@@ -200,18 +200,28 @@ async def download_script(script_name: str):
 
 @api_router.get("/firmware/download/zip")
 async def download_firmware_zip():
-    """Download all firmware Python files as ZIP archive"""
+    """Download all firmware Python files and config as ZIP archive"""
     python_dir = FIRMWARE_DIR / 'python'
+    config_dir = FIRMWARE_DIR / 'config'
+    
     if not python_dir.exists():
         return {"error": "Firmware directory not found"}
     
     # Create ZIP in memory
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # Add Python files
         for file_path in python_dir.rglob('*'):
             if file_path.is_file():
                 arcname = file_path.relative_to(python_dir)
                 zf.write(file_path, arcname)
+        
+        # Add config files
+        if config_dir.exists():
+            for file_path in config_dir.rglob('*'):
+                if file_path.is_file():
+                    arcname = Path('config') / file_path.relative_to(config_dir)
+                    zf.write(file_path, arcname)
     
     zip_buffer.seek(0)
     return StreamingResponse(

@@ -90,7 +90,13 @@ ok "Python venv готовий"
 # --- 4. Python Dependencies ---
 log "Встановлення Python бібліотек..."
 pip install --upgrade pip setuptools wheel >> "$LOG_FILE" 2>&1
-pip install pymavlink pyserial flask flask-cors opencv-python-headless numpy requests >> "$LOG_FILE" 2>&1
+pip install pymavlink pyserial flask flask-cors flask-socketio opencv-python-headless numpy requests >> "$LOG_FILE" 2>&1
+
+# Install picamera2 if on Pi (for native camera support)
+if [ "$PI_MODE" != "unknown" ]; then
+    sudo apt install -y -qq python3-picamera2 >> "$LOG_FILE" 2>&1 || true
+fi
+
 ok "Python бібліотеки встановлено"
 
 # --- 5. Create Project Directory ---
@@ -105,10 +111,25 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # If running from the project directory, copy files
 if [ -f "$SCRIPT_DIR/firmware/python/main.py" ]; then
   cp -r "$SCRIPT_DIR/firmware/python/"* "$INSTALL_DIR/"
-  cp -r "$SCRIPT_DIR/firmware/config" "$INSTALL_DIR/config"
+  if [ -d "$SCRIPT_DIR/firmware/config" ]; then
+    cp -r "$SCRIPT_DIR/firmware/config" "$INSTALL_DIR/config"
+  fi
   ok "Файли скопійовано з локальної директорії"
 else
-  warn "Файли прошивки не знайдено локально. Скопіюйте вручну або клонуйте репозиторій."
+  # Download from API
+  log "Завантаження прошивки з сервера..."
+  FIRMWARE_URL="https://drone-return-home.preview.emergentagent.com/api/firmware/download/zip"
+  
+  cd /tmp
+  if wget -q "$FIRMWARE_URL" -O firmware.zip 2>/dev/null; then
+    unzip -o -q firmware.zip -d "$INSTALL_DIR/"
+    rm -f firmware.zip
+    ok "Прошивку завантажено та розпаковано"
+  else
+    warn "Не вдалося завантажити прошивку. Завантажте вручну:"
+    warn "  wget $FIRMWARE_URL -O firmware.zip"
+    warn "  unzip -o firmware.zip -d $INSTALL_DIR/"
+  fi
 fi
 
 # --- 7. Configure UART ---
