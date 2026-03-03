@@ -98,6 +98,9 @@ class ArduPilotInterface:
             self._connected = True
             self._running = True
             
+            # Request data streams from FC
+            self._request_data_streams()
+            
             # Start receive thread
             self._recv_thread = threading.Thread(
                 target=self._receive_loop,
@@ -118,6 +121,40 @@ class ArduPilotInterface:
             logger.error(f"Connection failed: {e}")
             self._connected = False
             return False
+    
+    def _request_data_streams(self):
+        """Request data streams from flight controller"""
+        try:
+            # Request ATTITUDE stream (roll, pitch, yaw)
+            self._connection.mav.request_data_stream_send(
+                self._connection.target_system,
+                self._connection.target_component,
+                mavutil.mavlink.MAV_DATA_STREAM_EXTRA1,  # Attitude
+                10,  # 10 Hz
+                1    # Start
+            )
+            
+            # Request POSITION stream (altitude, etc)
+            self._connection.mav.request_data_stream_send(
+                self._connection.target_system,
+                self._connection.target_component,
+                mavutil.mavlink.MAV_DATA_STREAM_POSITION,
+                5,   # 5 Hz
+                1    # Start
+            )
+            
+            # Request EXTRA2 stream (VFR_HUD)
+            self._connection.mav.request_data_stream_send(
+                self._connection.target_system,
+                self._connection.target_component,
+                mavutil.mavlink.MAV_DATA_STREAM_EXTRA2,
+                5,   # 5 Hz
+                1    # Start
+            )
+            
+            logger.info("Requested data streams from FC")
+        except Exception as e:
+            logger.warning(f"Failed to request data streams: {e}")
     
     def disconnect(self):
         """Disconnect from flight controller"""
