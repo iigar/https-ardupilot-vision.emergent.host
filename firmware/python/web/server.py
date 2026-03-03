@@ -589,7 +589,7 @@ def start_return():
     if not _system:
         return jsonify({'error': 'System not initialized'}), 500
     
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     route_id = data.get('route_id')
     
     if _system.start_return(route_id):

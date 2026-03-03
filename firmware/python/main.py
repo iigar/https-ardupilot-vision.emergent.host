@@ -171,14 +171,15 @@ class VisualHomingSystem:
         elif self.state == SystemState.RETURNING:
             self._handle_returning(frame)
             
-        # Send visual data to ArduPilot
-        if self.mavlink.is_connected and pose:
+        # Send visual data to ArduPilot - ALWAYS send position even without pose change
+        if self.mavlink.is_connected:
+            # Always send current position
             self.mavlink.send_vision_position(
-                x=pose.x,
-                y=pose.y,
+                x=self._current_pose.x,
+                y=self._current_pose.y,
                 z=self._current_altitude,
-                yaw=pose.yaw,
-                confidence=pose.confidence
+                yaw=self._current_pose.yaw,
+                confidence=self._current_pose.confidence if hasattr(self._current_pose, 'confidence') else 0.95
             )
             
             if velocity:
@@ -189,15 +190,20 @@ class VisualHomingSystem:
                 )
             
             # Debug log every 5 seconds
-            if int(time.time()) % 5 == 0 and not hasattr(self, '_last_debug_log'):
-                logger.info(f"Sending VisOdom: x={pose.x:.2f}, y={pose.y:.2f}, z={self._current_altitude:.2f}, yaw={pose.yaw:.2f}")
-                self._last_debug_log = time.time()
+            if int(time.time()) % 5 == 0 and not hasattr(self, '_last_debug_time'):
+                logger.info(f"Sending VisOdom: x={self._current_pose.x:.2f}, y={self._current_pose.y:.2f}, z={self._current_altitude:.2f}, yaw={self._current_pose.yaw:.2f}, connected={self.mavlink.is_connected}")
+                self._last_debug_time = time.time()
             elif int(time.time()) % 5 != 0:
-                self._last_debug_log = None
-        elif not self.mavlink.is_connected:
+                if hasattr(self, '_last_debug_time'):
+                    delattr(self, '_last_debug_time')
+        else:
             # Log connection issue
-            if int(time.time()) % 10 == 0:
+            if int(time.time()) % 10 == 0 and not hasattr(self, '_last_warn_time'):
                 logger.warning("MAVLink not connected - cannot send VisOdom data")
+                self._last_warn_time = time.time()
+            elif int(time.time()) % 10 != 0:
+                if hasattr(self, '_last_warn_time'):
+                    delattr(self, '_last_warn_time')
     
     def _handle_recording(self, frame):
         """Handle recording state"""
