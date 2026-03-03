@@ -373,10 +373,10 @@ HTML_TEMPLATE = '''
             document.getElementById('posY').textContent = posY.toFixed(2);
             document.getElementById('posZ').textContent = posZ.toFixed(2);
             
-            // Update attitude (roll, pitch, yaw)
+            // Update attitude (roll, pitch, yaw) - from Flight Controller
             const roll = (data.attitude?.roll || 0) * 180 / Math.PI;
             const pitch = (data.attitude?.pitch || 0) * 180 / Math.PI;
-            const yaw = (data.pose?.yaw || 0) * 180 / Math.PI;
+            const yaw = (data.attitude?.yaw || 0) * 180 / Math.PI;  // Use FC yaw, not VO
             document.getElementById('roll').textContent = roll.toFixed(1) + '°';
             document.getElementById('pitch').textContent = pitch.toFixed(1) + '°';
             document.getElementById('yaw').textContent = yaw.toFixed(1) + '°';
