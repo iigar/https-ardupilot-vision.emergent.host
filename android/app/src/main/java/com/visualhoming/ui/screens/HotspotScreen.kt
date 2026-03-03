@@ -163,7 +163,7 @@ fun HotspotScreen() {
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
-                                    imageVector = Icons.Default.QrCode2,
+                                    imageVector = Icons.Default.QrCode,
                                     contentDescription = null,
                                     tint = Color.Black,
                                     modifier = Modifier.size(120.dp)
@@ -235,7 +235,7 @@ fun HotspotScreen() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.DevicesOther,
+                            imageVector = Icons.Default.Smartphone,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(48.dp)
@@ -318,10 +318,10 @@ private fun DeviceCard(device: ConnectedDevice) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = when (device.type) {
-                            DeviceType.RASPBERRY_PI -> Icons.Default.DeveloperBoard
+                            DeviceType.RASPBERRY_PI -> Icons.Default.Memory
                             DeviceType.PC -> Icons.Default.Computer
                             DeviceType.PHONE -> Icons.Default.PhoneAndroid
-                            else -> Icons.Default.DeviceUnknown
+                            else -> Icons.Default.Devices
                         },
                         contentDescription = null,
                         tint = Color.Black,

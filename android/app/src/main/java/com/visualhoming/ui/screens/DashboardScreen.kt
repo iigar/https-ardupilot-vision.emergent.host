@@ -55,7 +55,7 @@ fun DashboardScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 InfoChip(
-                    icon = Icons.Default.Straighten,
+                    icon = Icons.Default.Explore,
                     label = "Дистанція",
                     value = "406.8m"
                 )
@@ -71,7 +71,7 @@ fun DashboardScreen(
         ) {
             TelemetryCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Default.Height,
+                icon = Icons.Default.ArrowUpward,
                 label = "ALT",
                 value = "45",
                 unit = "m",
@@ -87,7 +87,7 @@ fun DashboardScreen(
             )
             TelemetryCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Default.Battery80,
+                icon = Icons.Default.BatteryFull,
                 label = "BAT",
                 value = "78",
                 unit = "%",

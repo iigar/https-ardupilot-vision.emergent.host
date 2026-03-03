@@ -27,7 +27,7 @@ fun TelemetryScreen() {
     ) {
         // Flight Data
         item {
-            SectionHeader(title = "Дані польоту", icon = Icons.Default.Flight)
+            SectionHeader(title = "Дані польоту", icon = Icons.Default.FlightTakeoff)
         }
         
         item {
@@ -40,7 +40,7 @@ fun TelemetryScreen() {
                     title = "Висота",
                     value = "45.2",
                     unit = "m",
-                    icon = Icons.Default.Height,
+                    icon = Icons.Default.ArrowUpward,
                     color = VHCyan
                 )
                 DataCard(
@@ -81,7 +81,7 @@ fun TelemetryScreen() {
         // Sensors Status
         item {
             Spacer(modifier = Modifier.height(8.dp))
-            SectionHeader(title = "Сенсори", icon = Icons.Default.Sensors)
+            SectionHeader(title = "Сенсори", icon = Icons.Default.Tune)
         }
         
         item {
@@ -129,7 +129,7 @@ fun TelemetryScreen() {
         // MAVLink Status
         item {
             Spacer(modifier = Modifier.height(8.dp))
-            SectionHeader(title = "MAVLink", icon = Icons.Default.Cable)
+            SectionHeader(title = "MAVLink", icon = Icons.Default.Usb)
         }
         
         item {
