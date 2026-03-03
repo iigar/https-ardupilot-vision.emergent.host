@@ -93,8 +93,8 @@ dependencies {
     // Coil (image loading)
     implementation("io.coil-kt:coil-compose:2.5.0")
     
-    // mDNS/NSD
-    implementation("javax.jmdns:jmdns:3.5.8")
+    // mDNS/NSD for Pi discovery
+    implementation("org.jmdns:jmdns:3.5.9")
     
     // Testing
     testImplementation("junit:junit:4.13.2")
