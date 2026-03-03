@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.visualhoming"
-    compileSdk = 34
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "com.visualhoming"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0.0"
 

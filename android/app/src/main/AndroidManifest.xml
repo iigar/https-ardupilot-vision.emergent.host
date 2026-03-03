@@ -38,7 +38,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VisualHoming"
         android:usesCleartextTraffic="true"
-        tools:targetApi="34">
+        tools:targetApi="33">
         
         <activity
             android:name=".MainActivity"
